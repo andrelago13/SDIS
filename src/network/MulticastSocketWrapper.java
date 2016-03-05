@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
-public class MulticastSocketWrapper extends MulticastSocket {
+public class MulticastSocketWrapper extends MulticastSocket  {
 	
 	private InetAddress group = null;
 
@@ -17,6 +17,14 @@ public class MulticastSocketWrapper extends MulticastSocket {
 	public void dispose() throws IOException {
 		leaveGroup(group);
 		close();
+	}
+
+	public ResponseGetterThread singleUsageResponseThread(ResponseHandler handler, int max_length) {
+		return new ResponseGetterThread(handler, this, max_length, true);
+	}
+
+	public ResponseGetterThread multipleUsageResponseThread(ResponseHandler handler, int max_length) {
+		return new ResponseGetterThread(handler, this, max_length, false);
 	}
 
 }

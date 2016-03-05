@@ -26,4 +26,12 @@ public class DatagramSocketWrapper extends DatagramSocket {
 		DatagramPacket packet = new DatagramPacket(msg, len, address, port);
 		send(packet);
 	}
+
+	public ResponseGetterThread singleUsageResponseThread(ResponseHandler handler, int max_length) {
+		return new ResponseGetterThread(handler, this, max_length, true);
+	}
+
+	public ResponseGetterThread multipleUsageResponseThread(ResponseHandler handler, int max_length) {
+		return new ResponseGetterThread(handler, this, max_length, false);
+	}
 }
