@@ -5,12 +5,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Collections;
 
 public class FileManager 
 {
 	
 	//public static SplitFILE splitFile(String filename, int replicationNum, int chunkSize)
 	
+	@SuppressWarnings("unchecked")
 	public static SplitFile splitFile(String filename, int replicationNum, int chunkSize) throws IOException
 	{
 		// TODO Falta gerar o fileId da SplitFile com base no filename. Alterar teste
@@ -46,10 +48,9 @@ public class FileManager
 			splitFile.getChunkList().add(new FileChunk(chunkPart, new byte[0], replicationNum));
 		}
 		
-		System.out.println(splitFile.getChunkList().size());
-		
 		readStream.close();
 		
+		Collections.sort(splitFile.getChunkList());
 		return splitFile;	
 	}
 
