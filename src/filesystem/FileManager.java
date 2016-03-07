@@ -1,8 +1,10 @@
 package filesystem;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class FileManager 
 {
@@ -11,36 +13,41 @@ public class FileManager
 	
 	public static SplitFile splitFile(String filename, int replicationNum, int chunkSize) throws IOException
 	{
-		int chunkSizeNew = chunkSize;
-		
-		// Falta gerar o fileId da SplitFile com base no filename. Alterar teste
+		// TODO Falta gerar o fileId da SplitFile com base no filename. Alterar teste
 		SplitFile splitFile = new SplitFile("teste");
 		
 		File file = new File(filename);
 		
-		FileInputStream readStream;
+		FileInputStream readStream = new FileInputStream(file);
+		BufferedReader br = new BufferedReader(new InputStreamReader(readStream));
 		int fileSize = (int)file.length();
 		
-		int fileSizeChunked = 0;
 		int chunkPart = 0;
-		byte[] chunkContentPart;
-		
-		readStream = new FileInputStream(file);
+		Boolean fileSizeMultiple = true;
 		
 		while(fileSize > 0)
 		{
-			if(fileSize < chunkSizeNew)
-				chunkSizeNew = fileSize;
+			char[] chunkContentPart = new char[chunkSize];
+			int readBytes = br.read(chunkContentPart, 0, chunkSize);
+			System.out.println(chunkContentPart);
 			
-			chunkContentPart = new byte[chunkSizeNew];
-			fileSizeChunked = readStream.read(chunkContentPart, 0, chunkSizeNew);
+			if(fileSize < chunkSize) {
+				fileSizeMultiple = false;
+			}
 			
-			fileSize -= fileSizeChunked;
-			chunkPart += 1;
+			fileSize -= readBytes;
 			
-			FileChunk chunk = new FileChunk(chunkPart, chunkContentPart, replicationNum);
+			FileChunk chunk = new FileChunk(chunkPart, new String(chunkContentPart, 0, readBytes).getBytes(), replicationNum);
 			splitFile.getChunkList().add(chunk);
+			chunkPart++;
 		}
+		
+		if(fileSizeMultiple) {
+			splitFile.getChunkList().add(new FileChunk(chunkPart, new byte[0], replicationNum));
+		}
+		
+		System.out.println(splitFile.getChunkList().size());
+		
 		readStream.close();
 		
 		return splitFile;	
