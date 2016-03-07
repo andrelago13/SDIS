@@ -2,38 +2,19 @@ package filesystem;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 
 public class FileManager 
 {
-	private int ChunkSize;
-	private ArrayList<ChunkFile> chunkFiles;
 	
-	public FileManager()
-	{
-		ChunkSize = 64000;
-		chunkFiles = new ArrayList<ChunkFile>();
-	}
+	//public static SplitFILE splitFile(String filename, int replicationNum, int chunkSize)
 	
-	public int getChunkSize()
+	public static SplitFile splitFile(String filename, int replicationNum, int chunkSize) throws IOException
 	{
-		return ChunkSize;
-	}
-	public ArrayList<ChunkFile> getChunkFileList()
-	{
-		return chunkFiles;
-	}
-	
-	public void setChunkSize(int ChunkSize)
-	{
-		this.ChunkSize = ChunkSize;
-	}
-	
-	public void fileToChunk(String filename, int replicationNum) throws IOException
-	{
-		FileManager fileMan = new FileManager();
+		int chunkSizeNew = chunkSize;
+		
+		// Falta gerar o fileId da SplitFile com base no filename. Alterar teste
+		SplitFile splitFile = new SplitFile("teste");
 		
 		File file = new File(filename);
 		
@@ -48,20 +29,21 @@ public class FileManager
 		
 		while(fileSize > 0)
 		{
-			if(fileSize < fileMan.getChunkSize())
-				fileMan.setChunkSize(fileSize);
+			if(fileSize < chunkSizeNew)
+				chunkSizeNew = fileSize;
 			
-			chunkContentPart = new byte[fileMan.getChunkSize()];
-			fileSizeChunked = readStream.read(chunkContentPart, 0, fileMan.getChunkSize());
+			chunkContentPart = new byte[chunkSizeNew];
+			fileSizeChunked = readStream.read(chunkContentPart, 0, chunkSizeNew);
 			
 			fileSize -= fileSizeChunked;
 			chunkPart += 1;
 			
-			ChunkFile chunk = new ChunkFile(chunkPart, chunkContentPart, replicationNum);
-			fileMan.getChunkFileList().add(chunk);
+			FileChunk chunk = new FileChunk(chunkPart, chunkContentPart, replicationNum);
+			splitFile.getChunkList().add(chunk);
 		}
 		readStream.close();
 		
+		return splitFile;	
 	}
 
 }

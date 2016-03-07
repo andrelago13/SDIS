@@ -1,12 +1,12 @@
 package filesystem;
 
-public class ChunkFile {
+public class FileChunk {
 
 	private int chunkNum;
 	private byte[] chunkContent;
 	private int replicationNumber;
 	
-	public ChunkFile(int chunkNum, byte[] chunkContent, int replicationNumber)
+	public FileChunk(int chunkNum, byte[] chunkContent, int replicationNumber)
 	{
 		this.chunkNum = chunkNum;
 		this.chunkContent = chunkContent;
