@@ -10,7 +10,7 @@ public class SplitFile
 	public SplitFile(String fileId)
 	{
 		this.fileId = fileId;
-		chunkList = new ArrayList(); 
+		chunkList = new ArrayList<FileChunk>(); 
 	}
 	
 	public ArrayList<FileChunk> getChunkList()
