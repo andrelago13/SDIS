@@ -1,10 +1,14 @@
 package filesystem;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collections;
 
 public class FileManager 
@@ -52,6 +56,17 @@ public class FileManager
 		
 		Collections.sort(splitFile.getChunkList());
 		return splitFile;	
+	}
+	
+	public void joinChunksToFile(ArrayList<FileChunk> chunks, String filePath) throws IOException
+	{	
+		FileOutputStream fos = new FileOutputStream(filePath);
+		try {
+			for(int i = 0; i < chunks.size(); i++)
+			fos.write(chunks.get(i).getchunkContent());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
