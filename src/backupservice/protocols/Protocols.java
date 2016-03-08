@@ -49,16 +49,14 @@ public class Protocols {
 		return new ProtocolInstance(header, body);
 	}
 	
-	public static ProtocolInstance storedProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no, byte[] content) throws IllegalArgumentException {
+	public static ProtocolInstance storedProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no) throws IllegalArgumentException {
 		ProtocolHeader header = new ProtocolHeader(MessageType.STORED, version_major, version_minor, sender_id, file_id, chunk_no);
-		ProtocolBody body = new ProtocolBody(content);
-		return new ProtocolInstance(header, body);
+		return new ProtocolInstance(header);
 	}
 	
-	public static ProtocolInstance getchunkProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no, byte[] content) throws IllegalArgumentException {
+	public static ProtocolInstance getchunkProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no) throws IllegalArgumentException {
 		ProtocolHeader header = new ProtocolHeader(MessageType.GETCHUNK, version_major, version_minor, sender_id, file_id, chunk_no);
-		ProtocolBody body = new ProtocolBody(content);
-		return new ProtocolInstance(header, body);
+		return new ProtocolInstance(header);
 	}
 	
 	public static ProtocolInstance chunkProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no, byte[] content) throws IllegalArgumentException {
@@ -67,16 +65,14 @@ public class Protocols {
 		return new ProtocolInstance(header, body);
 	}
 	
-	public static ProtocolInstance deleteProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no, byte[] content) throws IllegalArgumentException {
+	public static ProtocolInstance deleteProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no) throws IllegalArgumentException {
 		ProtocolHeader header = new ProtocolHeader(MessageType.DELETE, version_major, version_minor, sender_id, file_id, chunk_no);
-		ProtocolBody body = new ProtocolBody(content);
-		return new ProtocolInstance(header, body);
+		return new ProtocolInstance(header);
 	}
 	
-	public static ProtocolInstance removedProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no, byte[] content) throws IllegalArgumentException {
+	public static ProtocolInstance removedProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no) throws IllegalArgumentException {
 		ProtocolHeader header = new ProtocolHeader(MessageType.REMOVED, version_major, version_minor, sender_id, file_id, chunk_no);
-		ProtocolBody body = new ProtocolBody(content);
-		return new ProtocolInstance(header, body);
+		return new ProtocolInstance(header);
 	}
 	
 }
