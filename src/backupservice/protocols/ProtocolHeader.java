@@ -127,22 +127,14 @@ public class ProtocolHeader {
 	}
 	
 	public byte[] toBytes() {
-		String result = message_type.toString() + Protocols.FIELD_SEPARATOR;
+		String result = "" + message_type.toString() + Protocols.FIELD_SEPARATOR;
 		
-		if(version_major != -1) {
-			result += version_major + Protocols.FIELD_SEPARATOR;
-		}
-		
-		if(version_minor != -1) {
-			result += version_minor + Protocols.FIELD_SEPARATOR;
-		}
-		
-		if(version_minor != -1) {
-			result += version_minor + Protocols.FIELD_SEPARATOR;
+		if(version_major != -1 && version_minor != -1) {
+			result += "" + version_major + "." + version_minor +  Protocols.FIELD_SEPARATOR;
 		}
 		
 		if(sender_id != -1) {
-			result += sender_id + Protocols.FIELD_SEPARATOR;
+			result += "" + sender_id + Protocols.FIELD_SEPARATOR;
 		}
 		
 		if(!file_id.equals("")) {
@@ -150,15 +142,16 @@ public class ProtocolHeader {
 		}
 		
 		if(chunk_no != -1) {
-			result += chunk_no + Protocols.FIELD_SEPARATOR;
+			result += "" + chunk_no + Protocols.FIELD_SEPARATOR;
 		}
 		
 		if(replication_deg != -1) {
-			result += replication_deg + Protocols.FIELD_SEPARATOR;
+			result += "" + replication_deg + Protocols.FIELD_SEPARATOR;
 		}
 		
-		// "trim" removes the last space
-		return result.trim().getBytes();
+		result += Protocols.LINE_SEPARATOR+Protocols.LINE_SEPARATOR;
+		
+		return result.getBytes();
 	}
 	
 }

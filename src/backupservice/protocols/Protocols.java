@@ -65,8 +65,8 @@ public class Protocols {
 		return new ProtocolInstance(header, body);
 	}
 	
-	public static ProtocolInstance deleteProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no) throws IllegalArgumentException {
-		ProtocolHeader header = new ProtocolHeader(MessageType.DELETE, version_major, version_minor, sender_id, file_id, chunk_no);
+	public static ProtocolInstance deleteProtocolInstance(int version_major, int version_minor, int sender_id, String file_id) throws IllegalArgumentException {
+		ProtocolHeader header = new ProtocolHeader(MessageType.DELETE, version_major, version_minor, sender_id, file_id);
 		return new ProtocolInstance(header);
 	}
 	
