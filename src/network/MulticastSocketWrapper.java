@@ -13,6 +13,12 @@ public class MulticastSocketWrapper extends MulticastSocket  {
 		group = InetAddress.getByName(addr);
 		joinGroup(group);
 	}
+
+	public MulticastSocketWrapper(int port, InetAddress addr) throws IOException {
+		super(port);
+		group = addr;
+		joinGroup(group);
+	}
 	
 	public void dispose() throws IOException {
 		leaveGroup(group);
