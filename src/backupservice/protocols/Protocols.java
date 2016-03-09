@@ -75,4 +75,6 @@ public class Protocols {
 		return new ProtocolInstance(header);
 	}
 	
+	// TODO criar Instance a partir de byte buffer
+	
 }
