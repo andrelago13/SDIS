@@ -15,6 +15,7 @@ public class Hash {
 		
 		byte[] filenamehashed = mD.digest();
 		
+		// printHexBinary convertes a byte[] into string
 		return new String(DatatypeConverter.printHexBinary(filenamehashed));
 		
 	}
