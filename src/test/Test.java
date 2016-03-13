@@ -2,6 +2,7 @@ package test;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -35,17 +36,17 @@ public class Test {
 		
 		// Teste ao joinChunkFile
 		
-		byte[] b = ("teste 0 ").getBytes();
-		System.out.println(new String(b, Charset.forName("UTF-8")));
+		byte[] b = ("teste 0 ").getBytes("UTF-8");
+		System.out.println(new String(b));
+
+		byte[] b1 = ("teste 1 ").getBytes("UTF-8");
+		System.out.println(new String(b1));
 		
-		byte[] b1 = ("teste 1 ").getBytes();
-		System.out.println(new String(b1, Charset.forName("UTF-8")));
-		
-		byte[] b2 = ("teste 2 ").getBytes();
-		System.out.println(new String(b2, Charset.forName("UTF-8")));
+		byte[] b2 = ("teste 2 ").getBytes("UTF-8");
+		System.out.println(new String(b2));
 		 
-		byte[] b3 = ("teste 3").getBytes();
-		System.out.println(new String(b3, Charset.forName("UTF-8")));
+		byte[] b3 = ("teste 3").getBytes("UTF-8");
+		System.out.println(new String(b3));
 		
 		
 		ArrayList<FileChunk> fc2 = new ArrayList<FileChunk>();
@@ -58,6 +59,18 @@ public class Test {
 		
 		FileManager fm = new FileManager();
 		fm.joinChunksToFile(fc2, filePath);
+		
+		// Teste ao hash do nome de um ficheiro
+		
+		String filename = "teste";
+		String filenameHashed = "";
+		try {
+			filenameHashed = utils.Hash.hashFile(filename);
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(filenameHashed);
 		
 	}
 
