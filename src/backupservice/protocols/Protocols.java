@@ -88,17 +88,27 @@ public class Protocols {
 		String message_type = tokens[0];
 		
 		if(message_type.equals(MessageType.PUTCHUNK.toString())) {
-			// TODO check length
-			// TODO maybe a common parser for some subprotocols
+			if(tokens.length != 7)
+				throw new IllegalArgumentException("Invalid message buffer (PUTCHUNK expects 6 aditional tokens).");
 		} else if(message_type.equals(MessageType.STORED.toString())) {
+			if(tokens.length != 5)
+				throw new IllegalArgumentException("Invalid message buffer (STORED expects 4 aditional tokens).");
 			
 		} else if(message_type.equals(MessageType.GETCHUNK.toString())) {
+			if(tokens.length != 5)
+				throw new IllegalArgumentException("Invalid message buffer (GETCHUNK expects 4 aditional tokens).");
 			
 		} else if(message_type.equals(MessageType.CHUNK.toString())) {
+			if(tokens.length != 6)
+				throw new IllegalArgumentException("Invalid message buffer (CHUNK expects 5 aditional tokens).");
 			
 		} else if(message_type.equals(MessageType.DELETE.toString())) {
+			if(tokens.length != 4)
+				throw new IllegalArgumentException("Invalid message buffer (DELETE expects 3 aditional tokens).");
 			
 		} else if(message_type.equals(MessageType.REMOVED.toString())) {
+			if(tokens.length != 5)
+				throw new IllegalArgumentException("Invalid message buffer (REMOVED expects 4 aditional tokens).");
 			
 		} else {
 			throw new IllegalArgumentException("Invalid message buffer (first token must be valid message type).");
