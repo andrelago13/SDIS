@@ -1,5 +1,7 @@
 package backupservice.protocols;
 
+import utils.ArrayUtils;
+
 public class Protocols {
 
 	// Multicast channels: MC (control), MDB (backup data), MDR (restore data)
@@ -74,7 +76,42 @@ public class Protocols {
 		ProtocolHeader header = new ProtocolHeader(MessageType.REMOVED, version_major, version_minor, sender_id, file_id, chunk_no);
 		return new ProtocolInstance(header);
 	}
-	
+
 	// TODO criar Instance a partir de byte buffer
+	public static ProtocolInstance parseMessage(byte[] message) throws IllegalArgumentException {
+		String[] tokens = (new String(message)).split("\\s+");
+		
+		if(tokens.length == 0) {
+			throw new IllegalArgumentException("Invalid message buffer (empty buffer).");
+		}
+		
+		String message_type = tokens[0];
+		
+		if(message_type.equals(MessageType.PUTCHUNK.toString())) {
+			// TODO check length
+			// TODO maybe a common parser for some subprotocols
+		} else if(message_type.equals(MessageType.STORED.toString())) {
+			
+		} else if(message_type.equals(MessageType.GETCHUNK.toString())) {
+			
+		} else if(message_type.equals(MessageType.CHUNK.toString())) {
+			
+		} else if(message_type.equals(MessageType.DELETE.toString())) {
+			
+		} else if(message_type.equals(MessageType.REMOVED.toString())) {
+			
+		} else {
+			throw new IllegalArgumentException("Invalid message buffer (first token must be valid message type).");
+		}
+		
+		return null;
+	}
+	
+	
+	
+	
+	
+	
+	
 	
 }
