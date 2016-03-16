@@ -90,7 +90,7 @@ public class Protocols {
 			if(tokens.length != 7)
 				throw new IllegalArgumentException("Invalid message buffer (PUTCHUNK expects 6 aditional tokens).");
 			
-			String[] version_tokens = tokens[1].split(".");
+			String[] version_tokens = tokens[1].split("\\.");
 			
 			ProtocolHeader header = new ProtocolHeader(MessageType.PUTCHUNK, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(tokens[2]), tokens[3], Integer.parseInt(tokens[4]), Integer.parseInt(tokens[5]));
 			ProtocolBody body = new ProtocolBody(tokens[6].getBytes());
@@ -100,7 +100,7 @@ public class Protocols {
 			if(tokens.length != 5)
 				throw new IllegalArgumentException("Invalid message buffer (STORED expects 4 aditional tokens).");
 			
-			String[] version_tokens = tokens[1].split(".");
+			String[] version_tokens = tokens[1].split("\\.");
 			
 			ProtocolHeader header = new ProtocolHeader(MessageType.STORED, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(tokens[2]), tokens[3], Integer.parseInt(tokens[4]));
 			
@@ -109,7 +109,7 @@ public class Protocols {
 			if(tokens.length != 5)
 				throw new IllegalArgumentException("Invalid message buffer (GETCHUNK expects 4 aditional tokens).");
 			
-			String[] version_tokens = tokens[1].split(".");
+			String[] version_tokens = tokens[1].split("\\.");
 			
 			ProtocolHeader header = new ProtocolHeader(MessageType.GETCHUNK, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(tokens[2]), tokens[3], Integer.parseInt(tokens[4]));			
 		
@@ -118,7 +118,7 @@ public class Protocols {
 			if(tokens.length != 6)
 				throw new IllegalArgumentException("Invalid message buffer (CHUNK expects 5 aditional tokens).");
 			
-			String[] version_tokens = tokens[1].split(".");
+			String[] version_tokens = tokens[1].split("\\.");
 			
 			ProtocolHeader header = new ProtocolHeader(MessageType.CHUNK, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(tokens[2]), tokens[3], Integer.parseInt(tokens[4]));
 			ProtocolBody body = new ProtocolBody(tokens[5].getBytes());
@@ -128,7 +128,7 @@ public class Protocols {
 			if(tokens.length != 4)
 				throw new IllegalArgumentException("Invalid message buffer (DELETE expects 3 aditional tokens).");
 			
-			String[] version_tokens = tokens[1].split(".");
+			String[] version_tokens = tokens[1].split("\\.");
 			
 			ProtocolHeader header = new ProtocolHeader(MessageType.DELETE, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(tokens[2]), tokens[3]);			
 		
@@ -137,7 +137,7 @@ public class Protocols {
 			if(tokens.length != 5)
 				throw new IllegalArgumentException("Invalid message buffer (REMOVED expects 4 aditional tokens).");
 			
-			String[] version_tokens = tokens[1].split(".");
+			String[] version_tokens = tokens[1].split("\\.");
 			
 			ProtocolHeader header = new ProtocolHeader(MessageType.REMOVED, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(tokens[2]), tokens[3], Integer.parseInt(tokens[4]));			
 		
