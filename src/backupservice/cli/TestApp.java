@@ -18,21 +18,27 @@ public class TestApp {
 			{
 			case "BACKUP":
 				// Execute backup protocol with commandInfo
+				clearConsole();
 				break;
 			case "RESTORE":
 				// Execute restore protocol with commandInfo
+				clearConsole();
 				break;
 			case "RECLAIM":
 				// Execute reclaim protocol with commandInfo
+				clearConsole();
 				break;
 			case "DELETE":
 				// Execute delete protocol with commandInfo
+				clearConsole();
 				break;
 			case "ERROR":
 				System.out.println("Invalid operation!!! Type -> java TestApp HELP\n for more help");
+				clearConsole();
 				break;
 			case "EXIT":
 				run = false;
+				clearConsole();
 				break;
 			case "HELP":
 				System.out.println("Protocols availables:\n\n" + "Backup file:\n Press:BACKUP file replicationDegree\n\n"
@@ -40,6 +46,7 @@ public class TestApp {
 						+ "Reclaim file:\n Press:RECLAIM space\n\n"
 						+ "Delete file:\n Press:DELETE file\n\n"
 						+ "exit:\n Press:EXIT\n\n");
+				clearConsole();
 				break;
 			}	
 		}
@@ -87,6 +94,13 @@ public class TestApp {
 			response = "ERROR";
 
 		return response;
+	}
+	
+	public static void clearConsole()
+	{
+		int i = 0;
+		for(;i< 30; i++)
+			System.out.println();
 	}
 
 }
