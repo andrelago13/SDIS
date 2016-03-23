@@ -10,8 +10,6 @@ import java.util.Scanner;
 
 public class TestApp {
 
-	// TODO Local ip and port of tcp client
-
 	public static String LocalIp;
 	public static int LocalPort;
 
@@ -136,7 +134,6 @@ public class TestApp {
 
 		String response = "";
 
-		// TODO Change min and max replication degree of the file 
 		if(inputParts[1].equals("BACKUP") && inputParts.length == 4  && Integer.parseInt(inputParts[3]) >= 1 && Integer.parseInt(inputParts[3]) <= 9)
 		{
 			response = "BACKUP";
