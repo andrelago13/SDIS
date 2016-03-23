@@ -4,103 +4,106 @@ import java.util.Scanner;
 
 public class TestApp {
 
+	// TODO Local ip and port of tcp client
+
+	public static String LocalIp;
+	public static int LocalPort;
+
 	public static void main(String[] args) {
 
-		Scanner sc = new Scanner(System.in);
-		boolean run = true;
-		while(run)
-		{
-			String in = sc.nextLine();
-			String[] commandInfo = null;
-			String command = checkCommand(in, commandInfo);
-
+		String[] commandInfo = null;
+		String command = checkCommand(args, commandInfo);
+		
 			switch(command)
 			{
 			case "BACKUP":
 				// Execute backup protocol with commandInfo
-				clearConsole();
 				break;
 			case "RESTORE":
 				// Execute restore protocol with commandInfo
-				clearConsole();
 				break;
 			case "RECLAIM":
 				// Execute reclaim protocol with commandInfo
-				clearConsole();
 				break;
 			case "DELETE":
 				// Execute delete protocol with commandInfo
-				clearConsole();
 				break;
 			case "ERROR":
 				System.out.println("Invalid operation!!! Type -> java TestApp HELP\n for more help");
-				clearConsole();
 				break;
 			case "EXIT":
-				run = false;
-				clearConsole();
 				break;
 			case "HELP":
-				System.out.println("Protocols availables:\n\n" + "Backup file:\n Press:BACKUP file replicationDegree\n\n"
-						+ "Restore file:\n Press:RESTORE file\n\n" 
-						+ "Reclaim file:\n Press:RECLAIM space\n\n"
-						+ "Delete file:\n Press:DELETE file\n\n"
+				System.out.println("Protocols availables:\n\n" + "Backup file:\n Press:BACKUP peer_ap file replicationDegree\n\n"
+						+ "Restore file:\n Press:RESTORE peer_ap file\n\n" 
+						+ "Reclaim file:\n Press:RECLAIM peer_ap space\n\n"
+						+ "Delete file:\n Press:DELETE peer_ap file\n\n"
 						+ "exit:\n Press:EXIT\n\n");
-				clearConsole();
 				break;
 			}	
-		}
-		sc.close();
 	}
 
-	public static String checkCommand (String input, String[] inputInfo)
+	public static String checkCommand (String[] args, String[] inputInfo)
 	{
-		String[] inputParts = input.split(" ");
+		String[] inputParts = new String[args.length];
+		inputInfo = new String[args.length - 2];
+
+		for(int i = 0; i < args.length; i++)
+			inputParts[i] = args[i];
+
+		if(inputParts[0] != null)
+		{
+			if(inputParts[0].contains(":"))
+			{
+				String parts[] = inputParts[0].split(":");
+				LocalIp = parts[0];
+				LocalPort = Integer.parseInt(parts[1]);
+			}
+			else
+			{
+				LocalIp = "localhost";
+				LocalPort = Integer.parseInt(inputParts[0]);
+			}
+		}
+		else
+			System.err.println("You have to indicate the ip and port or just the port of the Tcp Client!");
+
 		String response = "";
 
-
 		// TODO Change min and max replication degree of the file 
-		if(inputParts[0].equals("BACKUP") && inputParts.length == 3 && utils.Files.fileValid(inputParts[1]) && Integer.parseInt(inputParts[2]) > 1 && Integer.parseInt(inputParts[2]) < 6)
+		if(inputParts[1].equals("BACKUP") && inputParts.length == 4  && Integer.parseInt(inputParts[3]) > 1 && Integer.parseInt(inputParts[3]) < 6)
 		{
 			response = "BACKUP";
 			// file name to backup
-			inputInfo[0] = inputParts[1];
+			inputInfo[0] = inputParts[2];
 			// replication degree
-			inputInfo[1] = inputParts[2];
+			inputInfo[1] = inputParts[3];
 		}
-		else if(inputParts[0].equals("RESTORE") && inputParts.length == 2)
+		else if(inputParts[1].equals("RESTORE") && inputParts.length == 3)
 		{
 			response = "RESTORE";
 			// file name to be restored
-			inputInfo[0] = inputParts[1];
+			inputInfo[0] = inputParts[2];
 		}
-		else if(inputParts[0].equals("RECLAIM") && inputParts.length == 2)
+		else if(inputParts[1].equals("RECLAIM") && inputParts.length == 3)
 		{
 			response = "RECLAIM";
 			// space reclaimed
-			inputInfo[0] = inputParts[1];
+			inputInfo[0] = inputParts[2];
 		}
-		else if(inputParts[0].equals("DELETE") && inputParts.length == 2)
+		else if(inputParts[1].equals("DELETE") && inputParts.length == 3)
 		{
 			response = "DELETE";
 			// file to be deleted
-			inputInfo[0] = inputParts[1];
+			inputInfo[0] = inputParts[2];
 		}
-		else if(inputParts[0].equals("HELP"))
+		else if(inputParts[1].equals("HELP"))
 			response = "HELP";
-		else if(inputParts[0].equals("EXIT"))
+		else if(inputParts[1].equals("EXIT"))
 			response = "EXIT";
 		else
 			response = "ERROR";
 
 		return response;
 	}
-	
-	public static void clearConsole()
-	{
-		int i = 0;
-		for(;i< 30; i++)
-			System.out.println();
-	}
-
 }
