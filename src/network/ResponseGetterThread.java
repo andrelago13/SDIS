@@ -91,10 +91,15 @@ public class ResponseGetterThread extends Thread {
 					return;
 				}
 				
-				// TODO maybe this should prevent from blocking
-				
-				if(enabled)
-					datagram_handler.handle(packet);
+				if(enabled) {
+					// Dispatches a new thread to avoid blocking upcoming messages
+					new Thread( new Runnable() {
+					    @Override
+					    public void run() {
+					    	datagram_handler.handle(packet);
+					    }
+					}).start();
+				}
 			}
 		}
 		
@@ -128,17 +133,22 @@ public class ResponseGetterThread extends Thread {
 					Socket connectionSocket = tcp_socket.accept();
 					BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 					
+					String request = inFromClient.readLine();
+					
 					if(!enabled) {
 						connectionSocket.close();
 						break;
 					}
-					
-					// TODO maybe this should prevent from blocking
-					
-					String request = inFromClient.readLine();
+
 					System.out.println("Received: \"" + request + "\"");
-					
-					tcp_handler.handle(request, connectionSocket);
+
+					// Dispatches a new thread to avoid blocking upcoming messages
+					new Thread( new Runnable() {
+					    @Override
+					    public void run() {
+							tcp_handler.handle(request, connectionSocket);
+					    }
+					}).start();
 				}
 			}
 		} catch (IOException e) {
@@ -151,7 +161,11 @@ public class ResponseGetterThread extends Thread {
 	}
 	
 	public void interrupt() {
-		// TODO actually interrupt thread
+		enabled = false;
+		super.interrupt();
+	}
+	
+	public void disable() {
 		enabled = false;
 	}
 	

@@ -10,8 +10,6 @@ import java.util.Scanner;
 
 public class TestApp {
 
-	// TODO Local ip and port of tcp client
-
 	public static String LocalIp;
 	public static int LocalPort;
 
