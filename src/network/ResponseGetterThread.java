@@ -39,13 +39,13 @@ public class ResponseGetterThread extends Thread {
 		this.single_usage = single_usage;
 	}
 
-	public ResponseGetterThread(ResponseHandler handler, ServerSocket socket) {
+	public ResponseGetterThread(TCPResponseHandler handler, ServerSocket socket) {
 		this(handler, socket, true);
 	}
 
-	public ResponseGetterThread(ResponseHandler handler, ServerSocket socket, Boolean single_usage) {
+	public ResponseGetterThread(TCPResponseHandler handler, ServerSocket socket, Boolean single_usage) {
 		type = Type.TCP;
-		this.datagram_handler = handler;
+		this.tcp_handler = handler;
 		
 		this.tcp_socket = socket;
 	}
@@ -103,8 +103,9 @@ public class ResponseGetterThread extends Thread {
 	}
 	
 	private void run_tcp() {
-		if(tcp_socket == null || tcp_handler == null || enabled)
+		if(tcp_socket == null || tcp_handler == null || enabled) {
 			return;
+		}
 		
 		System.out.println("Awaiting for TCP connections at port " + tcp_socket.getLocalPort());
 		
@@ -149,6 +150,7 @@ public class ResponseGetterThread extends Thread {
 	}
 	
 	public void interrupt() {
+		// TODO actually interrupt thread
 		enabled = false;
 	}
 	

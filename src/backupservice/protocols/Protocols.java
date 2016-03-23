@@ -1,8 +1,8 @@
 package backupservice.protocols;
 
-import utils.ArrayUtils;
-
 public class Protocols {
+	
+	public static final int MAX_PACKET_LENGTH = 64000; //64KB
 
 	// Multicast channels: MC (control), MDB (backup data), MDR (restore data)
 
