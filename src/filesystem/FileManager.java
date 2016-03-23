@@ -35,7 +35,6 @@ public class FileManager
 		{
 			char[] chunkContentPart = new char[chunkSize];
 			int readBytes = br.read(chunkContentPart, 0, chunkSize);
-			System.out.println(chunkContentPart);
 			
 			if(fileSize < chunkSize) {
 				fileSizeMultiple = false;

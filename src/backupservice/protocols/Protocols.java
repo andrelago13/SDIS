@@ -78,6 +78,7 @@ public class Protocols {
 	}
 
 	public static ProtocolInstance parseMessage(byte[] message) throws IllegalArgumentException {
+		// FIXME issue do crlf com ficheiro
 		String[] tokens = (new String(message)).split("\\s+");
 		
 		if(tokens.length == 0) {
@@ -147,11 +148,8 @@ public class Protocols {
 		return null;
 	}
 	
-	
-	
-	
-	
-	
-	
+	public static String currentVersion() {
+		return "" + PROTOCOL_VERSION_MAJOR + "." + PROTOCOL_VERSION_MINOR;
+	}
 	
 }
