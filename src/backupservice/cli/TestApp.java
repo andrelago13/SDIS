@@ -15,14 +15,32 @@ public class TestApp {
 	public static String LocalIp;
 	public static int LocalPort;
 
-	public static void main(String[] args) throws UnknownHostException, IOException {
+	public static void main(String[] args){
 
 		String[] commandInfo = new String[args.length - 2];
 		String command = checkCommand(args, commandInfo);
 
-		Socket socket = new Socket(LocalIp, LocalPort);
-		PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
-		BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		Socket socket = null;
+		try {
+			socket = new Socket(LocalIp, LocalPort);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		PrintWriter output = null;
+		try {
+			output = new PrintWriter(socket.getOutputStream(), true);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		BufferedReader input = null;
+		try {
+			input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		String request = "";
 
@@ -61,7 +79,13 @@ public class TestApp {
 		output.println(request);
 		System.out.println("Request sent -> " + request);
 		
-		String resp = input.readLine();
+		String resp = "";
+		try {
+			resp = input.readLine();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		System.out.println("Response received -> " + resp);
 		
 		if(resp.equals("0"))
@@ -71,7 +95,19 @@ public class TestApp {
 			System.err.println("Command unsuccessful (" + resp + ")");
 
 		output.close();
-		input.close();
+		try {
+			input.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 	public static String checkCommand (String[] args, String[] inputInfo)
