@@ -8,15 +8,17 @@ import javax.xml.bind.DatatypeConverter;
 
 public class Hash {
 	
-	public static String hashFile (String filename) throws NoSuchAlgorithmException, UnsupportedEncodingException
+	public static String hashFile (String filename, String owner, int replicationLevel) throws NoSuchAlgorithmException, UnsupportedEncodingException
 	{
-		MessageDigest mD = MessageDigest.getInstance("SHA-256");
-		mD.update(filename.getBytes("UTF-8"));
+		String fileID = filename + ":" + owner + ":" + System.currentTimeMillis() + ":" + Integer.toString(replicationLevel);
 		
-		byte[] filenamehashed = mD.digest();
+		MessageDigest mD = MessageDigest.getInstance("SHA-256");
+		mD.update(fileID.getBytes("UTF-8"));
+		
+		byte[] fileIDhashed = mD.digest();
 		
 		// printHexBinary converts a byte[] into string
-		return new String(DatatypeConverter.printHexBinary(filenamehashed));
+		return new String(DatatypeConverter.printHexBinary(fileIDhashed));
 		
 	}
 

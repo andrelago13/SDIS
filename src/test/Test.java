@@ -65,7 +65,7 @@ public class Test {
 		String filename = "teste";
 		String filenameHashed = "";
 		try {
-			filenameHashed = utils.Hash.hashFile(filename);
+			filenameHashed = utils.Hash.hashFile(filename, "leo", 2);
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
