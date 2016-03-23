@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
-public class ResponseGetterThread implements Runnable {
+public class ResponseGetterThread extends Thread {
 	
 	private ResponseHandler handler = null;
 	private DatagramSocket socket = null;
@@ -25,6 +25,8 @@ public class ResponseGetterThread implements Runnable {
 
 	@Override
 	public void run() {
+		System.out.println("Hello");
+		
 		if(socket == null || handler == null || buf_len < 1 || enabled)
 			return;
 		
