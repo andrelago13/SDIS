@@ -147,11 +147,8 @@ public class Protocols {
 		return null;
 	}
 	
-	
-	
-	
-	
-	
-	
+	public static String currentVersion() {
+		return "" + PROTOCOL_VERSION_MAJOR + "." + PROTOCOL_VERSION_MINOR;
+	}
 	
 }
