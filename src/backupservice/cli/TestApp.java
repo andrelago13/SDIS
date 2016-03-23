@@ -22,21 +22,21 @@ public class TestApp {
 		try {
 			socket = new Socket(LocalIp, LocalPort);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Cannot create socket!!");
 			e.printStackTrace();
 		}
 		PrintWriter output = null;
 		try {
 			output = new PrintWriter(socket.getOutputStream(), true);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Cannot create PrintWriter output!!");
 			e.printStackTrace();
 		}
 		BufferedReader input = null;
 		try {
 			input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Cannot create BufferedReader input!!");
 			e.printStackTrace();
 		}
 
@@ -81,7 +81,7 @@ public class TestApp {
 		try {
 			resp = input.readLine();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Cannot read resp from BufferedReader input!!");
 			e.printStackTrace();
 		}
 		System.out.println("Response received -> " + resp);
@@ -95,14 +95,14 @@ public class TestApp {
 		output.close();
 		try {
 			input.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		} catch (IOException e) {			
+			System.err.println("Cannot close BufferedReader input!!");
 			e.printStackTrace();
 		}
 		try {
 			socket.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Cannot close socket!!");
 			e.printStackTrace();
 		}
 		
