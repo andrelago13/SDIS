@@ -137,7 +137,7 @@ public class TestApp {
 		String response = "";
 
 		// TODO Change min and max replication degree of the file 
-		if(inputParts[1].equals("BACKUP") && inputParts.length == 4  && Integer.parseInt(inputParts[3]) > 1 && Integer.parseInt(inputParts[3]) < 6)
+		if(inputParts[1].equals("BACKUP") && inputParts.length == 4  && Integer.parseInt(inputParts[3]) >= 1 && Integer.parseInt(inputParts[3]) <= 9)
 		{
 			response = "BACKUP";
 			// file name to backup
