@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 public class ResponseGetterThread extends Thread {
 	
@@ -46,8 +47,8 @@ public class ResponseGetterThread extends Thread {
 	public ResponseGetterThread(TCPResponseHandler handler, ServerSocket socket, Boolean single_usage) {
 		type = Type.TCP;
 		this.tcp_handler = handler;
-		
 		this.tcp_socket = socket;
+		this.single_usage = single_usage;
 	}
 	
 	@Override
@@ -97,7 +98,7 @@ public class ResponseGetterThread extends Thread {
 			}
 		}
 		
-		System.out.println("Not listening to port " + datagram_socket.getPort() + " anymore");
+		System.out.println("Not listening to port " + datagram_socket.getLocalPort() + " anymore");
 		
 		enabled = false;
 	}
@@ -113,7 +114,7 @@ public class ResponseGetterThread extends Thread {
 		
 		try {
 			if(single_usage) {
-				SocketWrapper connectionSocket = (SocketWrapper) tcp_socket.accept();
+				Socket connectionSocket = tcp_socket.accept();
 				BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 				
 				if(enabled) {
@@ -124,7 +125,7 @@ public class ResponseGetterThread extends Thread {
 				}				
 			} else {
 				while(enabled) {
-					SocketWrapper connectionSocket = (SocketWrapper) tcp_socket.accept();
+					Socket connectionSocket = tcp_socket.accept();
 					BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 					
 					if(!enabled) {
@@ -144,7 +145,7 @@ public class ResponseGetterThread extends Thread {
 			e.printStackTrace();
 		}
 		
-		System.out.println("Not listening to port " + datagram_socket.getPort() + " anymore");
+		System.out.println("Not listening to port " + tcp_socket.getLocalPort() + " anymore");
 		
 		enabled = false;
 	}

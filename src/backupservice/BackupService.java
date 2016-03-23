@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 import backupservice.protocols.Protocols;
 import network.Communicator;
 import network.MulticastSocketWrapper;
 import network.ResponseGetterThread;
 import network.ResponseHandler;
-import network.SocketWrapper;
 import network.TCPResponseHandler;
 
 public class BackupService implements ResponseHandler, TCPResponseHandler {
@@ -96,6 +96,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 			socket_control.dispose();
 			socket_backup.dispose();
 			socket_restore.dispose();
+			own_socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -107,12 +108,10 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		System.out.println("Handle UDP");
 		System.out.println(new String(response.getData(), 0, response.getLength()));
 	}
-	
 
 	@Override
-	public void handle(String response, SocketWrapper connection_socket) {
+	public void handle(String response, Socket connection_socket) {
 		// TODO Auto-generated method stub
-
 		System.out.println("Handle TCP");
 		System.out.println(response);
 	}

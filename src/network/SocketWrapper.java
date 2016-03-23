@@ -4,10 +4,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class SocketWrapper extends Socket {
+public class SocketWrapper {
 	
-	public void send(String message) throws IOException {
-		DataOutputStream outToClient = new DataOutputStream(this.getOutputStream());
+	public static void sendTCP(Socket socket, String message) throws IOException {
+		DataOutputStream outToClient = new DataOutputStream(socket.getOutputStream());
 		outToClient.writeBytes(message);
 	}
 	
