@@ -126,12 +126,18 @@ public class BackupInitiator implements ProtocolProcessor {
 			int peer_id = header.getSender_id();
 			if(!responded_peers.contains(peer_id)) {
 				responded_peers.add(peer_id);
-				// TODO update registry
+				service.getMetadata().updateOwnFile(split_file.getFileId(), chunk.getchunkNum(), chunk.getreplicationNumber(), responded_peers.size(), chunk.getchunkContent().length);
+				try {
+					System.out.println("Backing up metadata");
+					service.getMetadata().backup();
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.err.println("Unable to backup metadata");
+				}
 			}
 		}
 		
 		public Boolean interested(ProtocolInstance message) {
-			System.err.println("Am I?");
 			if(message == null)
 				return false;
 			
