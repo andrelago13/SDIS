@@ -67,7 +67,6 @@ public class Test {
 		try {
 			filenameHashed = utils.Hash.hashFile(filename, 0, 2);
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		System.out.println(filenameHashed);

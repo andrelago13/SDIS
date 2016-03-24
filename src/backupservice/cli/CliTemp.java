@@ -62,8 +62,7 @@ public class CliTemp {
 		String response = "";
 
 
-		// TODO Change min and max replication degree of the file 
-		if(inputParts[0].equals("BACKUP") && inputParts.length == 3 && utils.Files.fileValid(inputParts[1]) && Integer.parseInt(inputParts[2]) > 1 && Integer.parseInt(inputParts[2]) < 6)
+		if(inputParts[0].equals("BACKUP") && inputParts.length == 3 && utils.Files.fileValid(inputParts[1]) && Integer.parseInt(inputParts[2]) > 0 && Integer.parseInt(inputParts[2]) < 10)
 		{
 			response = "BACKUP";
 			// file name to backup

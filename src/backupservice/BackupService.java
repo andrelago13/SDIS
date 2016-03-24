@@ -115,7 +115,6 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 
 	@Override
 	public void handle(DatagramPacket response) {
-		// TODO Auto-generated method stub
 		System.out.println("Handle UDP");
 		System.out.println(new String(response.getData(), 0, response.getLength()));
 		
@@ -132,7 +131,6 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 
 	@Override
 	public void handle(String response, Socket connection_socket) {
-		// TODO Auto-generated method stub
 		System.out.println("Handle TCP");
 		System.out.println(response);
 	}

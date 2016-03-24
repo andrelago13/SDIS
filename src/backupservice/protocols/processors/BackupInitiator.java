@@ -37,6 +37,7 @@ public class BackupInitiator implements ProtocolProcessor {
 		private MulticastSocketWrapper outgoing_socket = null;
 		
 		private int current_attempt = 0;
+		private ArrayList<Integer> responded_peers = null;
 		
 		public ChunkSender(SplitFile file, BackupService service, FileChunk chunk, int replication_deg) {
 			this.split_file = file;
@@ -44,6 +45,7 @@ public class BackupInitiator implements ProtocolProcessor {
 			this.replication_deg = replication_deg;
 			this.service = service;
 			this.outgoing_socket = this.service.getBackupSocket();
+			this.responded_peers = new ArrayList<Integer>();
 		}
 		
 		private void sendChunk() {
@@ -81,20 +83,25 @@ public class BackupInitiator implements ProtocolProcessor {
 		
 		private void eval() {
 			if(current_attempt == 4) {
-				// TODO has no more attempts
+				// TODO has no more attempts, respond with error and terminate
 			} else {
-				// TODO repetir até atingir replicação pretendida
-				// try with next attempt
-				++current_attempt;
-				run();
+				if(responded_peers.size() >= replication_deg) {
+					// TODO successful, respond success and terminate
+				} else {
+					++current_attempt;
+					run();					
+				}
 			}
 		}
 		
 		// Assumes it is interested in message
 		public void handle(ProtocolInstance message) {
-			// TODO store actual replication deg
-			// TODO guardar quem respondeu
-			// TODO registar tudo em metadata
+			ProtocolHeader header = message.getHeader();
+			int peer_id = header.getSender_id();
+			if(!responded_peers.contains(peer_id)) {
+				responded_peers.add(peer_id);
+				// TODO update registry
+			}
 		}
 		
 		public Boolean interested(ProtocolInstance message) {
