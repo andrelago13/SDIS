@@ -88,9 +88,16 @@ public class TestApp {
 		
 		if(resp.equals("0"))
 			System.out.println("Command successful!");
-		else
-			// resp has the error code
-			System.err.println("Command unsuccessful (" + resp + ")");
+		else if(resp.equals("1"))
+			System.out.println("Command partially successful!");
+		else if(resp.equals("-1"))
+			System.err.println("Command unsuccessful (error: " + resp + ")");
+		else if(resp.equals("-2"))
+			System.err.println("Command unsuccessful (error: " + resp + ")");
+		else if(resp.equals("-3"))
+			System.err.println("Command unsuccessful (error: " + resp + ")");
+		else if(resp.equals("-4"))
+			System.err.println("Command unsuccessful (error: " + resp + ")");
 
 		output.close();
 		try {
