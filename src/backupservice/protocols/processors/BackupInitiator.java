@@ -220,11 +220,11 @@ public class BackupInitiator implements ProtocolProcessor {
 			senders.add(new ChunkSender(split_file, service, chunks.get(i), replication_deg));
 		}
 		
+		active = true;
+		
 		for(int i = 0; i < senders.size(); ++i) {
 			senders.get(i).start();
 		}
-		
-		active = true;
 	}
 	
 	public void terminate() {

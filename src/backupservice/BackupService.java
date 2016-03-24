@@ -8,9 +8,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import filesystem.metadata.MetadataManager;
+import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
 import backupservice.protocols.processors.BackupInitiator;
 import backupservice.protocols.processors.ProtocolProcessor;
+import backupservice.protocols.processors.ProtocolProcessorFactory;
 import network.Communicator;
 import network.MulticastSocketWrapper;
 import network.ResponseGetterThread;
@@ -129,13 +131,18 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		//System.out.println(new String(response.getData(), 0, response.getLength()));
 		
 		Boolean handled = false;
+		ProtocolInstance response_instance = Protocols.parseMessage(new String(response.getData(), 0, response.getLength()));
 		for(int i = 0; i < processors.size(); ++i) {
-			if(processors.get(i).handle(Protocols.parseMessage(new String(response.getData(), 0, response.getLength())))) {
+			if(processors.get(i).handle(response_instance)) {
 				handled = true;
 			}
 		}
 		if(!handled) {
-			// TODO create processor using factory design pattern
+			ProtocolProcessor processor = ProtocolProcessorFactory.getProcessor(response_instance, this);
+			if(processor != null) {
+				addProcessor(processor);
+				processor.initiate();
+			}
 		}
 	}
 
@@ -143,6 +150,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 	public void handle(String response, Socket connection_socket) {
 		System.out.println("Handle TCP");
 		System.out.println(response);
+		
+		// TODO use factory to generate processor
 	}
 
 	public int identifier() {
