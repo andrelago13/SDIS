@@ -78,7 +78,7 @@ public class BackupInitiator implements ProtocolProcessor {
 		// TODO split file into chunks
 		try {
 			try {
-				split_file = FileManager.splitFile(file_path, 0 ,replication_deg, Protocols.MAX_PACKET_LENGTH);
+				split_file = FileManager.splitFile(file_path, service.getIdentifier() ,replication_deg, Protocols.MAX_PACKET_LENGTH);
 			} catch (NoSuchAlgorithmException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
