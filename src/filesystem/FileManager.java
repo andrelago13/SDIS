@@ -14,10 +14,9 @@ import java.util.Collections;
 
 public class FileManager 
 {
-	@SuppressWarnings("unchecked") @Deprecated
+	@SuppressWarnings("unchecked") @Deprecated 
 	public static SplitFile splitFile(String filename, int replicationNum, int chunkSize) throws IOException, NoSuchAlgorithmException
 	{
-		// TODO Falta gerar o fileId da SplitFile com base no filename. Alterar teste
 		String fileIdHashed = utils.Hash.hashFile(filename, 0, replicationNum);
 		SplitFile splitFile = new SplitFile(fileIdHashed);
 		
@@ -56,10 +55,9 @@ public class FileManager
 		return splitFile;	
 	}
 	
-	@SuppressWarnings("unchecked") 
+	@SuppressWarnings("unchecked")
 	public static SplitFile splitFile(String filename, int owner, int replicationNum, int chunkSize) throws IOException, NoSuchAlgorithmException
 	{
-		// TODO Falta gerar o fileId da SplitFile com base no filename. Alterar teste
 		String fileIdHashed = utils.Hash.hashFile(filename, owner, replicationNum);
 		SplitFile splitFile = new SplitFile(fileIdHashed);
 		
