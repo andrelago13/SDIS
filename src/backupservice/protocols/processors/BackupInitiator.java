@@ -19,6 +19,16 @@ import backupservice.protocols.Protocols;
 
 public class BackupInitiator implements ProtocolProcessor {
 	
+	public static enum EndCondition {
+		SUCCESS,
+		NOT_ENOUGH_REPLICATION,
+		MULTICAST_NOT_REACHABLE,
+		TCP_NOT_REACHABLE,
+		FILE_NOT_REACHABLE,
+		HASH_FAILURE
+	}
+	public static final String[] condition_codes = {"0", "1", "-1", "-2", "-3", "-4"};
+	
 	private BackupService service = null;
 	private String file_path = null;
 	private int replication_deg = -1;
@@ -60,7 +70,7 @@ public class BackupInitiator implements ProtocolProcessor {
 				e1.printStackTrace();
 				try {
 					if(response_socket != null)
-						SocketWrapper.sendTCP(response_socket, "2");
+						SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.MULTICAST_NOT_REACHABLE.ordinal()]);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -83,10 +93,26 @@ public class BackupInitiator implements ProtocolProcessor {
 		
 		private void eval() {
 			if(current_attempt == 4) {
-				// TODO has no more attempts, respond with error and terminate
+				if(response_socket != null) {
+					try {
+						SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.NOT_ENOUGH_REPLICATION.ordinal()]);
+					} catch (IOException e) {
+						e.printStackTrace();
+						System.err.println("Unable to confirm conditional success to TCP client.");
+					}
+				}
+				terminate();
 			} else {
 				if(responded_peers.size() >= replication_deg) {
-					// TODO successful, respond success and terminate
+					if(response_socket != null) {
+						try {
+							SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.SUCCESS.ordinal()]);
+						} catch (IOException e) {
+							e.printStackTrace();
+							System.err.println("Unable to confirm success to TCP client.");
+						}
+					}
+					terminate();
 				} else {
 					++current_attempt;
 					run();					
@@ -164,7 +190,7 @@ public class BackupInitiator implements ProtocolProcessor {
 			e.printStackTrace();
 			try {
 				if(response_socket != null)
-					SocketWrapper.sendTCP(response_socket, "1");
+					SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.FILE_NOT_REACHABLE.ordinal()]);
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -174,7 +200,7 @@ public class BackupInitiator implements ProtocolProcessor {
 			e.printStackTrace();
 			try {
 				if(response_socket != null)
-					SocketWrapper.sendTCP(response_socket, "3");
+					SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.HASH_FAILURE.ordinal()]);
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
