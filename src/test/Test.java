@@ -60,12 +60,12 @@ public class Test {
 		FileManager fm = new FileManager();
 		fm.joinChunksToFile(fc2, filePath);
 		
-		// Teste ao hash do nome de um ficheiro
+		// Teste ao hash do nome de um ficheiro assumindo o owner como 0
 		
 		String filename = "teste";
 		String filenameHashed = "";
 		try {
-			filenameHashed = utils.Hash.hashFile(filename, "leo", 2);
+			filenameHashed = utils.Hash.hashFile(filename, 0, 2);
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

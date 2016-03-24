@@ -8,9 +8,9 @@ import javax.xml.bind.DatatypeConverter;
 
 public class Hash {
 	
-	public static String hashFile (String filename, String owner, int replicationLevel) throws NoSuchAlgorithmException, UnsupportedEncodingException
+	public static String hashFile (String filename, int owner, int replicationLevel) throws NoSuchAlgorithmException, UnsupportedEncodingException
 	{
-		String fileID = filename + ":" + owner + ":" + System.currentTimeMillis() + ":" + Integer.toString(replicationLevel);
+		String fileID = filename + ":" + Integer.toString(owner) + ":" + System.currentTimeMillis() + ":" + Integer.toString(replicationLevel);
 		
 		MessageDigest mD = MessageDigest.getInstance("SHA-256");
 		mD.update(fileID.getBytes("UTF-8"));

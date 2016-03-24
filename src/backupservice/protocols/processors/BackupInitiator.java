@@ -2,6 +2,7 @@ package backupservice.protocols.processors;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import network.MulticastSocketWrapper;
@@ -72,11 +73,16 @@ public class BackupInitiator implements ProtocolProcessor {
 	
 	public void initiate() {
 
-		SplitFile split_file;
+		SplitFile split_file = null;
 		
 		// TODO split file into chunks
 		try {
-			split_file = FileManager.splitFile(file_path, replication_deg, Protocols.MAX_PACKET_LENGTH);
+			try {
+				split_file = FileManager.splitFile(file_path, 0 ,replication_deg, Protocols.MAX_PACKET_LENGTH);
+			} catch (NoSuchAlgorithmException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			// TODO notify response_socket of failure due to file system
