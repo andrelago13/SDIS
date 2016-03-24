@@ -97,7 +97,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		restore_receiver_thread.start();
 		command_receiver_thread.start();
 		
-		// FIXME remove this
+		// FIXME remove this after testing
 		BackupInitiator t = new BackupInitiator(this, "resources/test_read.txt", 1, null);
 		processors.add(t);
 		t.initiate();

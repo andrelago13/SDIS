@@ -1,8 +1,6 @@
 package backupservice.protocols.processors;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
