@@ -46,5 +46,17 @@ public class MetadataManager implements Serializable {
 	public ArrayList<FileBackupInfo> ownFilesInfo() {
 		return own_files;
 	}
-	
+
+	public void updateOwnFile(String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
+		for(int i = 0; i < own_files.size(); ++i) {
+			if(own_files.get(i).getHash().equals(file_hash)) {
+				own_files.get(i).updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
+				return;
+			}
+		}
+		
+		FileBackupInfo file = new FileBackupInfo(file_hash);
+		file.updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
+		own_files.add(file);
+	}
 }

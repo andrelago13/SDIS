@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import filesystem.metadata.MetadataManager;
 import backupservice.protocols.Protocols;
 import backupservice.protocols.processors.BackupInitiator;
 import backupservice.protocols.processors.ProtocolProcessor;
@@ -21,6 +22,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 	private final static int START_SOCKET_NO = 8080;
 	
 	private int identifier;
+	
+	private MetadataManager metadata = null;
 	
 	private MulticastSocketWrapper socket_control = null;
 	private MulticastSocketWrapper socket_backup = null;
@@ -47,6 +50,14 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		
 		initiateOwnSocket();
 		processors = new ArrayList<ProtocolProcessor>();
+		
+		try {
+			metadata = MetadataManager.getInstance();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			System.err.println("Unable to get metadata information. Reseting.");
+			metadata = MetadataManager.resetInstance();
+		}
 	}
 	
 	public BackupService(int identifier, String control_address, int control_port, String backup_address, int backup_port, String restore_address, int restore_port) throws IllegalArgumentException, IOException {

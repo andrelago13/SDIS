@@ -39,4 +39,18 @@ public class FileBackupInfo implements Serializable {
 		return chunks.size();
 	}
 	
+	public void updateChunk(int chunk_num, int size, int min_replication, int replication) {
+		for(int i = 0; i < chunks.size(); ++i) {
+			if(chunks.get(i).getNum() == chunk_num) {
+				ChunkBackupInfo chunk = chunks.get(i);
+				chunk.setActualReplication(replication);
+				chunk.setMinReplication(min_replication);
+				chunk.setSize(size);
+				
+				return;
+			}
+		}
+		
+		chunks.add(new ChunkBackupInfo(chunk_num, size, min_replication, replication));
+	}
 }
