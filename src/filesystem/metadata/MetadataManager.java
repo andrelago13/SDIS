@@ -11,7 +11,7 @@ import java.util.ArrayList;
 @SuppressWarnings("serial")
 public class MetadataManager implements Serializable {
 	
-	private static final String METADATA_PATH = "resources/metadata";
+	private static final String METADATA_PATH = "resources/metadata/backup_metadata";
 	private static MetadataManager instance = null;
 	
 	private ArrayList<FileBackupInfo> own_files = null;
