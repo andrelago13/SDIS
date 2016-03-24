@@ -53,4 +53,14 @@ public class FileBackupInfo implements Serializable {
 		
 		chunks.add(new ChunkBackupInfo(chunk_num, size, min_replication, replication));
 	}
+
+	public String toString() {
+		String result = "";
+		result += '\t' + "File: " + hash + '\n' + '\t' + "Chunks:" + '\n';
+		for(int i = 0; i < chunks.size(); ++i) {
+			result += chunks.get(i).toString() + '\n';
+		}
+		return result;
+	}
+
 }

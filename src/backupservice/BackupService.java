@@ -50,14 +50,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		
 		initiateOwnSocket();
 		processors = new ArrayList<ProtocolProcessor>();
-		
-		try {
-			metadata = MetadataManager.getInstance();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			System.err.println("Unable to get metadata information. Reseting.");
-			metadata = MetadataManager.resetInstance();
-		}
+		initiateMetadata();
 	}
 	
 	public BackupService(int identifier, String control_address, int control_port, String backup_address, int backup_port, String restore_address, int restore_port) throws IllegalArgumentException, IOException {
@@ -73,6 +66,11 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		
 		initiateOwnSocket();
 		processors = new ArrayList<ProtocolProcessor>();
+		initiateMetadata();
+	}
+	
+	public void initiateMetadata() {
+		metadata = MetadataManager.getInstance();		
 	}
 	
 	public void initiateOwnSocket() throws IOException {
@@ -127,8 +125,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 
 	@Override
 	public void handle(DatagramPacket response) {
-		System.out.println("Handle UDP");
-		System.out.println(new String(response.getData(), 0, response.getLength()));
+		//System.out.println("Handle UDP");
+		//System.out.println(new String(response.getData(), 0, response.getLength()));
 		
 		Boolean handled = false;
 		for(int i = 0; i < processors.size(); ++i) {
@@ -158,5 +156,9 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 	public void removeProcessor(ProtocolProcessor processor) {
 		if(processors.contains(processor))
 			processors.remove(processor);
+	}
+
+	public MetadataManager getMetadata() {
+		return metadata;
 	}
 }

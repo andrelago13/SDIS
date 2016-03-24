@@ -49,4 +49,8 @@ public class ChunkBackupInfo implements Serializable {
 		this.size = size;
 	}
 	
+	public String toString() {
+		return "" + '\t' + '\t' + "Chunk #" + num + " size:" + size + " min_replication:" + min_replication + " replication:" + actual_replication;
+	}
+	
 }
