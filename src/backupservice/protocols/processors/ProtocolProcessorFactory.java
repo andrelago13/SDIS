@@ -1,6 +1,9 @@
 package backupservice.protocols.processors;
 
+import java.net.Socket;
+
 import backupservice.BackupService;
+import backupservice.cli.CLIProtocolInstance;
 import backupservice.protocols.ProtocolHeader;
 import backupservice.protocols.ProtocolInstance;
 
@@ -33,6 +36,27 @@ public abstract class ProtocolProcessorFactory {
 		return null;
 	}
 	
-	// TODO factory para TCP
+	public static ProtocolProcessor getProcessor(CLIProtocolInstance tcp_message, BackupService service) {
+		return getProcessor(tcp_message, service, null);
+	}
+	
+	public static ProtocolProcessor getProcessor(CLIProtocolInstance tcp_message, BackupService service, Socket response_socket) {
+		
+		switch(tcp_message.type()) {
+		case BACKUP:
+			return new BackupInitiator(service, tcp_message.filePath(), tcp_message.replicationDegree(), response_socket);
+		case RESTORE:
+			// TODO restore initiator
+			break;
+		case DELETE:
+			// TODO delete initiator
+			break;
+		case RECLAIM:
+			// TODO reclaim initiator
+			break;
+		}
+		
+		return null;
+	}
 	
 }

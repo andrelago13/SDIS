@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import filesystem.metadata.MetadataManager;
+import backupservice.cli.CLIProtocolInstance;
 import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
 import backupservice.protocols.processors.BackupInitiator;
@@ -151,7 +152,11 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		System.out.println("Handle TCP");
 		System.out.println(response);
 		
-		// TODO use factory to generate processor
+		ProtocolProcessor processor = ProtocolProcessorFactory.getProcessor(new CLIProtocolInstance(response), this, connection_socket);
+		if(processor != null) {
+			processors.add(processor);
+			processor.initiate();
+		}
 	}
 
 	public int identifier() {
