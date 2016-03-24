@@ -99,6 +99,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		
 		// FIXME remove this
 		BackupInitiator t = new BackupInitiator(this, "resources/test_read.txt", 1, null);
+		processors.add(t);
 		t.initiate();
 	}
 
@@ -120,7 +121,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		
 		Boolean handled = false;
 		for(int i = 0; i < processors.size(); ++i) {
-			if(processors.get(i).handle(Protocols.parseMessage(response.getData()))) {
+			if(processors.get(i).handle(Protocols.parseMessage(new String(response.getData(), 0, response.getLength())))) {
 				handled = true;
 			}
 		}
@@ -137,5 +138,14 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 
 	public int identifier() {
 		return identifier;
+	}
+
+	public void addProcessor(ProtocolProcessor processor) {
+		processors.add(processor);
+	}
+	
+	public void removeProcessor(ProtocolProcessor processor) {
+		if(processors.contains(processor))
+			processors.remove(processor);
 	}
 }

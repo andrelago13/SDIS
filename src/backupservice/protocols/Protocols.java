@@ -77,7 +77,7 @@ public class Protocols {
 		return new ProtocolInstance(header);
 	}
 
-	public static ProtocolInstance parseMessage(byte[] message) throws IllegalArgumentException {
+	public static ProtocolInstance parseMessage(String message) throws IllegalArgumentException {
 		String message_str = new String(message);
 		String[] temp = (message_str).split(LINE_SEPARATOR);
 		

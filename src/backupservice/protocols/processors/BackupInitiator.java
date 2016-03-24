@@ -93,6 +93,7 @@ public class BackupInitiator implements ProtocolProcessor {
 		
 		private void eval() {
 			if(current_attempt == 4) {
+				System.out.println("Ending backup of chunk #" + chunk.getchunkNum() + " from file " + split_file.getFileId() + " (replcation degree " + responded_peers.size() + ", attempt " + current_attempt + ")");
 				if(response_socket != null) {
 					try {
 						SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.NOT_ENOUGH_REPLICATION.ordinal()]);
@@ -104,6 +105,7 @@ public class BackupInitiator implements ProtocolProcessor {
 				terminate();
 			} else {
 				if(responded_peers.size() >= replication_deg) {
+					System.out.println("Ending backup of chunk #" + chunk.getchunkNum() + " from file " + split_file.getFileId() + " (replcation degree " + responded_peers.size() + ", attempt " + current_attempt + ")");
 					if(response_socket != null) {
 						try {
 							SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.SUCCESS.ordinal()]);
@@ -131,6 +133,7 @@ public class BackupInitiator implements ProtocolProcessor {
 		}
 		
 		public Boolean interested(ProtocolInstance message) {
+			System.err.println("Am I?");
 			if(message == null)
 				return false;
 			
@@ -222,7 +225,7 @@ public class BackupInitiator implements ProtocolProcessor {
 	
 	public void terminate() {
 		active = false;
-		// TODO remove itself from backupservice
+		service.removeProcessor(this);
 	}
 
 	@Override
