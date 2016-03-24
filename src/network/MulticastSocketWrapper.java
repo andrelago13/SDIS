@@ -1,16 +1,19 @@
 package network;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
 public class MulticastSocketWrapper extends MulticastSocket  {
 	
 	private InetAddress group = null;
+	private int port = -1;
 
 	public MulticastSocketWrapper(int port, String addr) throws IOException {
 		super(port);
 		group = InetAddress.getByName(addr);
+		this.port = port;
 		joinGroup(group);
 	}
 
@@ -33,4 +36,7 @@ public class MulticastSocketWrapper extends MulticastSocket  {
 		return new ResponseGetterThread(handler, this, max_length, false);
 	}
 
+	public void send(byte[] message, int length) throws IOException {
+		send(new DatagramPacket(message, length, group, port));
+	}
 }

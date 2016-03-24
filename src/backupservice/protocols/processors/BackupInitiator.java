@@ -1,10 +1,13 @@
 package backupservice.protocols.processors;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 
 import network.MulticastSocketWrapper;
+import network.SocketWrapper;
 import filesystem.FileChunk;
 import filesystem.FileManager;
 import filesystem.SplitFile;
@@ -25,18 +28,54 @@ public class BackupInitiator implements ProtocolProcessor {
 	private ArrayList<ChunkSender> senders = null;
 	
 	private class ChunkSender extends Thread {
-		private MulticastSocketWrapper outgoing_socket = null;
+		private SplitFile split_file = null;
 		private FileChunk chunk = null;
 		private int replication_deg = -1;
+		private BackupService service = null;
+		private MulticastSocketWrapper outgoing_socket = null;
 		
-		public ChunkSender(MulticastSocketWrapper socket, FileChunk chunk, int replication_deg) {
-			this.outgoing_socket = socket;
+		public ChunkSender(SplitFile file, BackupService service, FileChunk chunk, int replication_deg) {
+			this.split_file = file;
 			this.chunk = chunk;
 			this.replication_deg = replication_deg;
+			this.service = service;
+			this.outgoing_socket = this.service.getBackupSocket();
+		}
+		
+		private void sendChunk() {
+			System.out.println("Backing up chunk #" + chunk.getchunkNum() + " from file " + split_file.getFileId() + " (replcation degree " + this.replication_deg + ")");
+			ProtocolInstance instance = Protocols.chunkProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR, 
+					service.getIdentifier(), split_file.getFileId(), chunk.getchunkNum(), chunk.getchunkContent());
+			
+			byte[] packet_bytes = instance.toBytes();
+			try {
+				outgoing_socket.send(packet_bytes, packet_bytes.length);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				try {
+					if(response_socket != null)
+						SocketWrapper.sendTCP(response_socket, "2");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return;
+			}
 		}
 		
 		public void run() {
-			// TODO acabar
+			sendChunk();
+		}
+		
+		public void handle(ProtocolInstance message) {
+			// TODO store actual replication deg
+			// TODO repetir até atingir replicação pretendida
+			// TODO guardar quem respondeu
+			// TODO registar tudo em metadata
+		}
+		
+		public Boolean interested(ProtocolInstance message) {
+			// TODO true se mensagem for do chunk correspondente
+			return false;
 		}
 		
 		public FileChunk chunk() {
@@ -65,33 +104,48 @@ public class BackupInitiator implements ProtocolProcessor {
 		if(!active)
 			return false;
 		
-		// TODO ver se mensagem é para nós e tratar
+		for(int i = 0; i < senders.size(); ++i) {
+			if(senders.get(i).interested(message)) {
+				new Thread( new Runnable() {
+				    @Override
+				    public void run() {
+						senders.get(i).handle(message));
+				    }
+				}).start();
+				return true;
+			}
+		}
 		
-		return null;
+		return false;
 	}
 	
 	public void initiate() {
 
 		SplitFile split_file;
 		
-		// TODO split file into chunks
 		try {
 			split_file = FileManager.splitFile(file_path, replication_deg, Protocols.MAX_PACKET_LENGTH);
 		} catch (IOException e) {
 			e.printStackTrace();
-			// TODO notify response_socket of failure due to file system
+			try {
+				if(response_socket != null)
+					SocketWrapper.sendTCP(response_socket, "1");
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			terminate();
 			return;
 		}
 		
 		ArrayList<FileChunk> chunks = split_file.getChunkList();
 		for(int i = 0; i < chunks.size(); ++i) {
-			senders.add(new ChunkSender(service.getBackupSocket(), chunks.get(i), replication_deg));
+			senders.add(new ChunkSender(split_file, service, chunks.get(i), replication_deg));
 		}
 		
-		// TODO send chunks and store actual replication deg
-		// TODO repetir até atingir replicação pretendida
-		// TODO guardar quem respondeu
-		// TODO registar tudo em metadata
+		for(int i = 0; i < senders.size(); ++i) {
+			senders.get(i).start();
+		}
+		
 		active = true;
 	}
 	
