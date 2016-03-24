@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import backupservice.protocols.Protocols;
+import backupservice.protocols.processors.BackupInitiator;
 import backupservice.protocols.processors.ProtocolProcessor;
 import network.Communicator;
 import network.MulticastSocketWrapper;
@@ -95,6 +96,10 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		backup_receiver_thread.start();
 		restore_receiver_thread.start();
 		command_receiver_thread.start();
+		
+		// FIXME remove this
+		BackupInitiator t = new BackupInitiator(this, "resources/test_read.txt", 1, null);
+		t.initiate();
 	}
 
 	public void terminate() {

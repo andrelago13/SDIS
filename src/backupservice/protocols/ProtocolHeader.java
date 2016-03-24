@@ -154,4 +154,74 @@ public class ProtocolHeader {
 		return result.getBytes();
 	}
 	
+
+	public MessageType getMessage_type() {
+		return message_type;
+	}
+	
+
+	public void setMessage_type(MessageType message_type) {
+		this.message_type = message_type;
+	}
+	
+
+	public int getVersion_major() {
+		return version_major;
+	}
+	
+
+	public void setVersion_major(int version_major) {
+		this.version_major = version_major;
+	}
+	
+
+	public int getVersion_minor() {
+		return version_minor;
+	}
+	
+
+	public void setVersion_minor(int version_minor) {
+		this.version_minor = version_minor;
+	}
+	
+
+	public int getSender_id() {
+		return sender_id;
+	}
+	
+
+	public void setSender_id(int sender_id) {
+		this.sender_id = sender_id;
+	}
+	
+
+	public String getFile_id() {
+		return file_id;
+	}
+	
+
+	public void setFile_id(String file_id) {
+		this.file_id = file_id;
+	}
+	
+
+	public int getChunk_no() {
+		return chunk_no;
+	}
+	
+
+	public void setChunk_no(int chunk_no) {
+		this.chunk_no = chunk_no;
+	}
+	
+
+	public int getReplication_deg() {
+		return replication_deg;
+	}
+	
+
+	public void setReplication_deg(int replication_deg) {
+		this.replication_deg = replication_deg;
+	}
+	
 }

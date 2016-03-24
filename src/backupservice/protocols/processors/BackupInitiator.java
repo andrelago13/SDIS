@@ -13,6 +13,7 @@ import filesystem.FileChunk;
 import filesystem.FileManager;
 import filesystem.SplitFile;
 import backupservice.BackupService;
+import backupservice.protocols.ProtocolHeader;
 import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
 
@@ -35,7 +36,7 @@ public class BackupInitiator implements ProtocolProcessor {
 		private BackupService service = null;
 		private MulticastSocketWrapper outgoing_socket = null;
 		
-		private int current_attempt = 1;
+		private int current_attempt = 0;
 		
 		public ChunkSender(SplitFile file, BackupService service, FileChunk chunk, int replication_deg) {
 			this.split_file = file;
@@ -46,9 +47,9 @@ public class BackupInitiator implements ProtocolProcessor {
 		}
 		
 		private void sendChunk() {
-			System.out.println("Backing up chunk #" + chunk.getchunkNum() + " from file " + split_file.getFileId() + " (replcation degree " + this.replication_deg + ")");
-			ProtocolInstance instance = Protocols.chunkProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR, 
-					service.getIdentifier(), split_file.getFileId(), chunk.getchunkNum(), chunk.getchunkContent());
+			System.out.println("Backing up chunk #" + chunk.getchunkNum() + " from file " + split_file.getFileId() + " (replcation degree " + this.replication_deg + ", attempt " + current_attempt + ")");
+			ProtocolInstance instance = Protocols.putChunkProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR, 
+					service.getIdentifier(), split_file.getFileId(), chunk.getchunkNum(), replication_deg, chunk.getchunkContent());
 			
 			byte[] packet_bytes = instance.toBytes();
 			try {
@@ -74,13 +75,13 @@ public class BackupInitiator implements ProtocolProcessor {
 			                eval();
 			            }
 			        }, 
-			        1000 * current_attempt 
+			        (long) (1000 * Math.pow(2, current_attempt))
 			);
 		}
 		
 		private void eval() {
-			if(current_attempt == 5) {
-				// has no more attempts
+			if(current_attempt == 4) {
+				// TODO has no more attempts
 			} else {
 				// TODO repetir até atingir replicação pretendida
 				// try with next attempt
@@ -89,6 +90,7 @@ public class BackupInitiator implements ProtocolProcessor {
 			}
 		}
 		
+		// Assumes it is interested in message
 		public void handle(ProtocolInstance message) {
 			// TODO store actual replication deg
 			// TODO guardar quem respondeu
@@ -96,16 +98,19 @@ public class BackupInitiator implements ProtocolProcessor {
 		}
 		
 		public Boolean interested(ProtocolInstance message) {
-			// TODO true se mensagem for do chunk correspondente
+			if(message == null)
+				return false;
+			
+			ProtocolHeader header = message.getHeader();
+			if(header != null && header.getMessage_type() == Protocols.MessageType.STORED) {
+				String file_id = header.getFile_id();
+				int chunk_no = header.getChunk_no();
+				if(file_id != null && file_id.equals(split_file.getFileId()) && chunk_no == chunk.getchunkNum()) {
+					return true;
+				}
+			}
+			
 			return false;
-		}
-		
-		public FileChunk chunk() {
-			return chunk;
-		}
-		
-		public int chunkNum() {
-			return chunk.getchunkNum();
 		}
 	}
 
@@ -147,17 +152,22 @@ public class BackupInitiator implements ProtocolProcessor {
 		SplitFile split_file = null;
 		
 		try {
-			try {
-				split_file = FileManager.splitFile(file_path, service.getIdentifier() ,replication_deg, Protocols.MAX_PACKET_LENGTH);
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			split_file = FileManager.splitFile(file_path, service.getIdentifier() ,replication_deg, Protocols.MAX_PACKET_LENGTH);
 		} catch (IOException e) {
 			e.printStackTrace();
 			try {
 				if(response_socket != null)
 					SocketWrapper.sendTCP(response_socket, "1");
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			terminate();
+			return;
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			try {
+				if(response_socket != null)
+					SocketWrapper.sendTCP(response_socket, "3");
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
