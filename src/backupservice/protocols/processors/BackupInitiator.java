@@ -35,6 +35,8 @@ public class BackupInitiator implements ProtocolProcessor {
 		private BackupService service = null;
 		private MulticastSocketWrapper outgoing_socket = null;
 		
+		private int current_attempt = 1;
+		
 		public ChunkSender(SplitFile file, BackupService service, FileChunk chunk, int replication_deg) {
 			this.split_file = file;
 			this.chunk = chunk;
@@ -65,11 +67,30 @@ public class BackupInitiator implements ProtocolProcessor {
 		
 		public void run() {
 			sendChunk();
+			new java.util.Timer().schedule( 
+			        new java.util.TimerTask() {
+			            @Override
+			            public void run() {
+			                eval();
+			            }
+			        }, 
+			        1000 * current_attempt 
+			);
+		}
+		
+		private void eval() {
+			if(current_attempt == 5) {
+				// has no more attempts
+			} else {
+				// TODO repetir até atingir replicação pretendida
+				// try with next attempt
+				++current_attempt;
+				run();
+			}
 		}
 		
 		public void handle(ProtocolInstance message) {
 			// TODO store actual replication deg
-			// TODO repetir até atingir replicação pretendida
 			// TODO guardar quem respondeu
 			// TODO registar tudo em metadata
 		}
