@@ -106,10 +106,11 @@ public class BackupInitiator implements ProtocolProcessor {
 		
 		for(int i = 0; i < senders.size(); ++i) {
 			if(senders.get(i).interested(message)) {
+				final ChunkSender sender = senders.get(i);
 				new Thread( new Runnable() {
 				    @Override
 				    public void run() {
-						senders.get(i).handle(message));
+				    	sender.handle(message);
 				    }
 				}).start();
 				return true;
