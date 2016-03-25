@@ -63,20 +63,28 @@ public class MetadataManager implements Serializable {
 	}
 	
 	public ArrayList<FileBackupInfo> peerFilesInfo() {
-		
+		return peer_files;
 	}
 
 	public void updateOwnFile(String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
-		for(int i = 0; i < own_files.size(); ++i) {
-			if(own_files.get(i).getHash().equals(file_hash)) {
-				own_files.get(i).updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
+		updateFile(own_files, file_hash, chunk_num, chunk_min_replication, chunk_replication, chunk_size);
+	}
+	
+	public void updatePeerFile(String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
+		updateFile(peer_files, file_hash, chunk_num, chunk_min_replication, chunk_replication, chunk_size);
+	}
+	
+	public void updateFile(ArrayList<FileBackupInfo> file_list, String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
+		for(int i = 0; i < file_list.size(); ++i) {
+			if(file_list.get(i).getHash().equals(file_hash)) {
+				file_list.get(i).updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
 				return;
 			}
 		}
 		
 		FileBackupInfo file = new FileBackupInfo(file_hash);
 		file.updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
-		own_files.add(file);
+		file_list.add(file);
 	}
 
 	public String toString() {
@@ -88,6 +96,8 @@ public class MetadataManager implements Serializable {
 			result += own_files.get(i).toString() + '\n';
 		}
 		result += "### End of own files metadata" + '\n' + '\n';
+		
+		// TODO adicionar peer files
 		
 		return result;
 	}
