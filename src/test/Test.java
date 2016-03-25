@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
+import backupservice.protocols.processors.BackupInitiator;
+import backupservice.protocols.processors.BackupInitiator.EndCondition;
 import filesystem.FileChunk;
 import filesystem.FileManager;
 import filesystem.SplitFile;
@@ -71,6 +74,9 @@ public class Test {
 		}
 		System.out.println(filenameHashed);
 		
+		// Teste para aceder a elementos enum com base em indice
+		
+		System.out.println(EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf("1"))]);		
 	}
 
 }

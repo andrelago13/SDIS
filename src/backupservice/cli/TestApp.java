@@ -6,7 +6,11 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Scanner;
+
+import backupservice.protocols.processors.BackupInitiator;
+import backupservice.protocols.processors.BackupInitiator.EndCondition;
 
 public class TestApp {
 
@@ -91,13 +95,13 @@ public class TestApp {
 		else if(resp.equals("1"))
 			System.out.println("Command partially successful!");
 		else if(resp.equals("-1"))
-			System.err.println("Command unsuccessful (error: " + resp + ")");
+			System.err.println("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
 		else if(resp.equals("-2"))
-			System.err.println("Command unsuccessful (error: " + resp + ")");
+			System.err.println("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
 		else if(resp.equals("-3"))
-			System.err.println("Command unsuccessful (error: " + resp + ")");
+			System.err.println("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
 		else if(resp.equals("-4"))
-			System.err.println("Command unsuccessful (error: " + resp + ")");
+			System.err.println("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
 
 		output.close();
 		try {

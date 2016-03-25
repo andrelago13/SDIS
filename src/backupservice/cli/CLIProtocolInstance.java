@@ -15,8 +15,28 @@ public class CLIProtocolInstance {
 	private int max_space = -1;
 
 	public CLIProtocolInstance(String message) throws IllegalArgumentException {
-		// TODO fazer parsing
-		// TODO faz throw de um IllegalArgumentException se mensagem não for comando do protocolo
+
+		String[] messageParts = message.split(" ");
+		
+		int i = 0;
+		for (; i < Type.values().length;i++)
+			if(Type.values()[i].toString() == messageParts[0])
+				break;
+		
+		if(i == Type.values().length - 1)
+			throw new IllegalArgumentException("Invalid protocol command!");
+		
+		if(messageParts[0].equals("BACKUP"))
+		{
+			file_path = messageParts[1];
+			replication_deg = Integer.parseInt(messageParts[2]);
+		}
+		else if(messageParts[0].equals("RESTORE"))
+			file_path = messageParts[1];
+		else if(messageParts[0].equals("DELETE"))
+			file_path = messageParts[1];
+		else if(messageParts[0].equals("RECLAIM"))
+			max_space = Integer.parseInt(messageParts[1]);	
 	}
 	
 	public Type type() {
