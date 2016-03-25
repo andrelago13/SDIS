@@ -1,6 +1,9 @@
 package backupservice.protocols.processors;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -78,11 +81,10 @@ public class BackupPeer implements ProtocolProcessor {
 	
 	@Override
 	public Boolean handle(ProtocolInstance message) {
-		// TODO Auto-generated method stub
-		// TODO aguardar random (0-400ms) e responder STORED
-		// TODO Responder a todos os PUTCHUNK
+		// TODO Responder a todos os PUTCHUNK (aguardar random (0-400ms) e responder STORED)
 		// TODO Ativar "escuta" por outros STORED (espera tempo máximo de delay e, se receber algum stored, volta a esperar) - sistema semelhante ao backupinitiator
 		// TODO guardar metadata
+		// TODO guardar só se houver espaço
 		return null;
 	}
 
@@ -120,9 +122,14 @@ public class BackupPeer implements ProtocolProcessor {
 	@Override
 	public void initiate() {
 		active = true;
+		try {
+			storeChunk();
+		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		generateDelay();
-		// TODO guardar metadata
-		// TODO actually store chunk lel
+		service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, 1, chunk_content.length);
 		replyWithDelay();
 		
 		evalDelay(WAIT_FOR_STORED_DELAY);
@@ -133,6 +140,13 @@ public class BackupPeer implements ProtocolProcessor {
 	public void terminate() {
 		active = false;
 		service.removeProcessor(this);
+	}
+	
+	private void storeChunk() throws FileNotFoundException, UnsupportedEncodingException {
+		// TODO acabar
+		PrintWriter writer = new PrintWriter("the-file-name.txt", "UTF-8");
+		writer.print(chunk_content);
+		writer.close();
 	}
 
 }

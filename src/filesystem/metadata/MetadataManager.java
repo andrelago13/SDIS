@@ -74,7 +74,7 @@ public class MetadataManager implements Serializable {
 		updateFile(peer_files, file_hash, chunk_num, chunk_min_replication, chunk_replication, chunk_size);
 	}
 	
-	public void updateFile(ArrayList<FileBackupInfo> file_list, String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
+	private void updateFile(ArrayList<FileBackupInfo> file_list, String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
 		for(int i = 0; i < file_list.size(); ++i) {
 			if(file_list.get(i).getHash().equals(file_hash)) {
 				file_list.get(i).updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
