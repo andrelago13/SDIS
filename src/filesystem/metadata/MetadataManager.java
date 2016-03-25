@@ -97,7 +97,12 @@ public class MetadataManager implements Serializable {
 		}
 		result += "### End of own files metadata" + '\n' + '\n';
 		
-		// TODO adicionar peer files
+		// Peer files
+		result += "==> Peer files metadata" + '\n';
+		for(int i = 0; i < peer_files.size(); ++i) {
+			result += peer_files.get(i).toString() + '\n';
+		}
+		result += "### End of peer files metadata" + '\n' + '\n';
 		
 		return result;
 	}
