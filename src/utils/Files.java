@@ -22,9 +22,9 @@ public class Files {
 			return false;
 	}
 	
-	public static void removeFile(String path, String filename)
+	public static void removeFile(String path)
 	{
-		File file = new File(path + filename);
+		File file = new File(path);
 		file.delete();
 	}
 }
