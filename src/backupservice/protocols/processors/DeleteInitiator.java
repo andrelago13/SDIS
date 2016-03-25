@@ -10,6 +10,7 @@ import network.SocketWrapper;
 import filesystem.FileChunk;
 import filesystem.FileManager;
 import filesystem.SplitFile;
+import filesystem.metadata.MetadataManager;
 import backupservice.BackupService;
 import backupservice.protocols.ProtocolHeader;
 import backupservice.protocols.ProtocolInstance;
@@ -51,24 +52,14 @@ public class DeleteInitiator implements ProtocolProcessor {
 			this.respondedPeers = new ArrayList<Integer>();
 		}
 
-		// TODO implementar run e eval() e acabar o handle
+		// TODO implementar run, eval, handle e interested
+		public Boolean interested(ProtocolInstance message) {	return false;	}
 
-		public boolean interested(ProtocolInstance message) {
-			if(message == null)
-				return false;
+		public void run() {}
 
-			ProtocolHeader header = message.getHeader();
-			if(header != null && header.getMessage_type() == Protocols.MessageType.DELETE) {
-				String file_id = header.getFile_id();
-				if(file_id != null)
-					return true;
-			}
-			return false;
-		}
+		private void eval() {  }
 
-		public void handle(ProtocolInstance message) {
-			// TODO Auto-generated method stub
-		}
+		public void handle(ProtocolInstance message) {	}
 	}
 
 	public DeleteInitiator(BackupService service, String filePath) {
@@ -84,9 +75,13 @@ public class DeleteInitiator implements ProtocolProcessor {
 	@Override
 	public void initiate() {
 
-		if(utils.Files.fileValid(filePath))
-			utils.Files.removeFile(filePath);
-		
+		MetadataManager mg = service.getMetadata();
+
+		for(int i = 0; i < mg.ownFilesInfo().size(); i++)
+			if(mg.ownFilesInfo().get(i).getHash().equals(filePath))
+				if(utils.Files.fileValid(filePath))
+					utils.Files.removeFile(filePath);
+
 		// TODO Preencher a lista de peers que tem que remover 
 	}
 
