@@ -20,10 +20,10 @@ public class CLIProtocolInstance {
 		
 		int i = 0;
 		for (; i < Type.values().length;i++)
-			if(Type.values()[i].toString() == messageParts[0])
+			if(Type.values()[i].toString().equals(messageParts[0]))
 				break;
 		
-		if(i == Type.values().length - 1)
+		if(i == Type.values().length)
 			throw new IllegalArgumentException("Invalid protocol command!");
 		
 		if(messageParts[0].equals("BACKUP"))
