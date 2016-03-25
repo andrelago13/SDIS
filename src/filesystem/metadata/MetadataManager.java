@@ -15,6 +15,7 @@ public class MetadataManager implements Serializable {
 	private static MetadataManager instance = null;
 	
 	private ArrayList<FileBackupInfo> own_files = null;
+	private ArrayList<FileBackupInfo> peer_files = null;
 
 	public static MetadataManager getInstance() {
 		if(instance == null) {
@@ -46,6 +47,7 @@ public class MetadataManager implements Serializable {
 	
 	private MetadataManager() {
 		own_files = new ArrayList<FileBackupInfo>();
+		peer_files = new ArrayList<FileBackupInfo>();
 	}
 	
 	public void backup() throws IOException {
@@ -59,18 +61,30 @@ public class MetadataManager implements Serializable {
 	public ArrayList<FileBackupInfo> ownFilesInfo() {
 		return own_files;
 	}
+	
+	public ArrayList<FileBackupInfo> peerFilesInfo() {
+		return peer_files;
+	}
 
 	public void updateOwnFile(String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
-		for(int i = 0; i < own_files.size(); ++i) {
-			if(own_files.get(i).getHash().equals(file_hash)) {
-				own_files.get(i).updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
+		updateFile(own_files, file_hash, chunk_num, chunk_min_replication, chunk_replication, chunk_size);
+	}
+	
+	public void updatePeerFile(String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
+		updateFile(peer_files, file_hash, chunk_num, chunk_min_replication, chunk_replication, chunk_size);
+	}
+	
+	private void updateFile(ArrayList<FileBackupInfo> file_list, String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
+		for(int i = 0; i < file_list.size(); ++i) {
+			if(file_list.get(i).getHash().equals(file_hash)) {
+				file_list.get(i).updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
 				return;
 			}
 		}
 		
 		FileBackupInfo file = new FileBackupInfo(file_hash);
 		file.updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
-		own_files.add(file);
+		file_list.add(file);
 	}
 
 	public String toString() {
@@ -82,6 +96,13 @@ public class MetadataManager implements Serializable {
 			result += own_files.get(i).toString() + '\n';
 		}
 		result += "### End of own files metadata" + '\n' + '\n';
+		
+		// Peer files
+		result += "==> Peer files metadata" + '\n';
+		for(int i = 0; i < peer_files.size(); ++i) {
+			result += peer_files.get(i).toString() + '\n';
+		}
+		result += "### End of peer files metadata" + '\n' + '\n';
 		
 		return result;
 	}

@@ -133,9 +133,13 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		
 		Boolean handled = false;
 		ProtocolInstance response_instance = Protocols.parseMessage(new String(response.getData(), 0, response.getLength()));
+		if(response_instance == null)
+			return;
+		
 		for(int i = 0; i < processors.size(); ++i) {
 			if(processors.get(i).handle(response_instance)) {
 				handled = true;
+				// TODO maybe break here
 			}
 		}
 		if(!handled) {
