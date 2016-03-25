@@ -15,6 +15,7 @@ public class MetadataManager implements Serializable {
 	private static MetadataManager instance = null;
 	
 	private ArrayList<FileBackupInfo> own_files = null;
+	private ArrayList<FileBackupInfo> peer_files = null;
 
 	public static MetadataManager getInstance() {
 		if(instance == null) {
@@ -46,6 +47,7 @@ public class MetadataManager implements Serializable {
 	
 	private MetadataManager() {
 		own_files = new ArrayList<FileBackupInfo>();
+		peer_files = new ArrayList<FileBackupInfo>();
 	}
 	
 	public void backup() throws IOException {
@@ -58,6 +60,10 @@ public class MetadataManager implements Serializable {
 	
 	public ArrayList<FileBackupInfo> ownFilesInfo() {
 		return own_files;
+	}
+	
+	public ArrayList<FileBackupInfo> peerFilesInfo() {
+		
 	}
 
 	public void updateOwnFile(String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {

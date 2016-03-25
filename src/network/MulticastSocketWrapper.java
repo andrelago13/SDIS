@@ -39,4 +39,8 @@ public class MulticastSocketWrapper extends MulticastSocket  {
 	public void send(byte[] message, int length) throws IOException {
 		send(new DatagramPacket(message, length, group, port));
 	}
+
+	public void send(String message) throws IOException {
+		send(message.getBytes(), message.length());
+	}
 }
