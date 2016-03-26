@@ -275,4 +275,23 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 			logger.show(message);
 		}
 	}
+
+	public void logError(String message) {
+		if(logger != null) {
+			logger.logError(message);
+		}
+	}
+	
+	public void logAndShowError(String message) {
+		if(logger != null) {
+			logger.logAndShowError(message);
+		}		
+	}
+	
+	public void showError(String message) {
+		if(logger != null) {
+			logger.showError(message);
+		}		
+	}
+
 }

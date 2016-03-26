@@ -30,6 +30,24 @@ public class Logger {
 		return LOG_PATH + "/" + owner_id + ".txt";
 	}
 	
+	public void logError(String message) {
+		appendLog(getErrorStr(message));
+	}
+	
+	public void logAndShowError(String message) {
+		String log = getErrorStr(message);
+		appendLog(log);
+		showErrorText(log);
+	}
+	
+	public void showError(String message) {
+		showErrorText(getErrorStr(message));
+	}
+	
+	private void showErrorText(String text) {
+		System.err.println(text);
+	}
+	
 	public void log(String message) {
 		appendLog(getLogStr(message));
 	}
@@ -50,6 +68,10 @@ public class Logger {
 	
 	public String getLogStr(String message) {
 		return timestamp() + ":" + owner_id + "  =>  " + message;
+	}
+	
+	public String getErrorStr(String message) {
+		return "«ERROR» " + getLogStr(message);
 	}
 	
 	private static String timestamp() {
