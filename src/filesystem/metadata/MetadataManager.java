@@ -53,7 +53,6 @@ public class MetadataManager implements Serializable {
 	}
 	
 	public void backup() throws IOException {
-		System.out.println(own_files.size());
 		FileOutputStream fout = new FileOutputStream(METADATA_PATH);
 		ObjectOutputStream oos = new ObjectOutputStream(fout);   
 		oos.writeObject(instance);

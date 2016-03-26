@@ -105,7 +105,7 @@ public class Protocols {
 			}
 			
 			ProtocolHeader header = new ProtocolHeader(MessageType.PUTCHUNK, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(header_split[2]), header_split[3], Integer.parseInt(header_split[4]), Integer.parseInt(header_split[5]));
-			ProtocolBody body = new ProtocolBody(message_str.substring(message_str.indexOf(LINE_SEPARATOR) + 2*LINE_SEPARATOR.length(), message_str.length()-1).getBytes());
+			ProtocolBody body = new ProtocolBody(message_str.substring(message_str.indexOf(LINE_SEPARATOR) + 2*LINE_SEPARATOR.length(), message_str.length()).getBytes());
 			
 			return new ProtocolInstance(header, body);
 		} else if(message_type.equals(MessageType.STORED.toString())) {
@@ -137,7 +137,7 @@ public class Protocols {
 			}
 			
 			ProtocolHeader header = new ProtocolHeader(MessageType.CHUNK, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(header_split[2]), header_split[3], Integer.parseInt(header_split[4]));
-			ProtocolBody body = new ProtocolBody(message_str.substring(message_str.indexOf(LINE_SEPARATOR) + 2*LINE_SEPARATOR.length(), message_str.length()-1).getBytes());
+			ProtocolBody body = new ProtocolBody(message_str.substring(message_str.indexOf(LINE_SEPARATOR) + 2*LINE_SEPARATOR.length(), message_str.length()).getBytes());
 			
 			return new ProtocolInstance(header, body);			
 		} else if(message_type.equals(MessageType.DELETE.toString())) {

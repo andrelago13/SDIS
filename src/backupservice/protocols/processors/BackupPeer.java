@@ -65,8 +65,6 @@ public class BackupPeer implements ProtocolProcessor {
 		            @Override
 		            public void run() {
 		                try {
-		                	System.out.println("Sending");
-		                	System.out.println(reply.toString());
 							service.getControlSocket().send(reply.toString());
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -171,7 +169,7 @@ public class BackupPeer implements ProtocolProcessor {
 		f.delete();
 		f.createNewFile();
 		PrintWriter writer = new PrintWriter(getChunkPath(), "UTF-8");
-		writer.print(chunk_content);
+		writer.print(new String(chunk_content));
 		writer.close();		
 	}
 
