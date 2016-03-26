@@ -26,6 +26,8 @@ public class CLIProtocolInstance {
 		if(i == Type.values().length)
 			throw new IllegalArgumentException("Invalid protocol command!");
 		
+		type = Type.values()[i];
+		
 		if(messageParts[0].equals("BACKUP"))
 		{
 			file_path = messageParts[1];

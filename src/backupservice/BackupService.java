@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import filesystem.metadata.MetadataManager;
@@ -111,10 +112,16 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		restore_receiver_thread.start();
 		command_receiver_thread.start();
 		
-		// FIXME remove this after testing
+		try {
+			System.out.println("Listening for commands at " + InetAddress.getLocalHost().getHostAddress() + ":" + own_socket.getLocalPort());
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		
+		/*// FIXME remove this after testing
 		BackupInitiator t = new BackupInitiator(this, "resources/test_read.txt", 1, null);
 		processors.add(t);
-		t.initiate();
+		t.initiate();*/
 	}
 
 	public void terminate() {
@@ -158,10 +165,19 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		System.out.println("Handle TCP");
 		System.out.println(response);
 		
-		ProtocolProcessor processor = ProtocolProcessorFactory.getProcessor(new CLIProtocolInstance(response), this, connection_socket);
+		ProtocolProcessor processor = null;
+		try {
+			processor = ProtocolProcessorFactory.getProcessor(new CLIProtocolInstance(response), this, connection_socket);
+		} catch (Exception e) {
+			System.err.println("Invalid TCP command received =>" + response);
+			return;
+		}
 		if(processor != null) {
 			processors.add(processor);
 			processor.initiate();
+		} else {
+			System.err.println("Invalid TCP command received =>" + response);	
+			return;
 		}
 	}
 
