@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import filesystem.metadata.MetadataManager;
 import backupservice.cli.CLIProtocolInstance;
+import backupservice.log.Logger;
 import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
 import backupservice.protocols.processors.ProtocolProcessor;
@@ -29,6 +30,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 	private int identifier;
 	
 	private MetadataManager metadata = null;
+	private Logger logger = null;
 	
 	private MulticastSocketWrapper socket_control = null;
 	private MulticastSocketWrapper socket_backup = null;
@@ -56,6 +58,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		initiateOwnSocket();
 		processors = new ArrayList<ProtocolProcessor>();
 		initiateMetadata();
+		initiateLogger();
 	}
 	
 	public BackupService(int identifier, String control_address, int control_port, String backup_address, int backup_port, String restore_address, int restore_port) throws IllegalArgumentException, IOException {
@@ -72,13 +75,23 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		initiateOwnSocket();
 		processors = new ArrayList<ProtocolProcessor>();
 		initiateMetadata();
+		initiateLogger();
 	}
 	
-	public void initiateMetadata() {
+	private void initiateLogger() {
+		try {
+			logger = new Logger(identifier);
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("Unable to initialize logger");
+		}
+	}
+	
+	private void initiateMetadata() {
 		metadata = new MetadataManager(identifier);		
 	}
 	
-	public void initiateOwnSocket() throws IOException {
+	private void initiateOwnSocket() throws IOException {
 		own_socket = new ServerSocket(START_SOCKET_NO + identifier);
 	}
 	
@@ -227,5 +240,23 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 
 	public MetadataManager getMetadata() {
 		return metadata;
+	}
+
+	public void log(String message) {
+		if(logger != null) {
+			logger.log(message);
+		}
+	}
+
+	public void logAndShow(String message) {
+		if(logger != null) {
+			logger.logAndShow(message);
+		}
+	}
+
+	public void show(String message) {
+		if(logger != null) {
+			logger.show(message);
+		}
 	}
 }
