@@ -1,17 +1,9 @@
 package backupservice.protocols.processors;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 import backupservice.BackupService;
@@ -112,6 +104,9 @@ public class BackupPeer implements ProtocolProcessor {
 	}
 
 	private void eval() {
+		if(!active())
+			return;
+		
 		++attempt;
 		if(attempt > MAX_ATTEMPT) {
 			terminate();
@@ -130,6 +125,8 @@ public class BackupPeer implements ProtocolProcessor {
 		        new java.util.TimerTask() {
 		            @Override
 		            public void run() {
+		        		if(!active())
+		        			return;
 		                eval();
 		            }
 		        }, 
@@ -174,6 +171,6 @@ public class BackupPeer implements ProtocolProcessor {
 	}
 
 	private String getChunkPath() {
-		return BackupService.BACKUP_FILE_PATH + file_id + "_" + chunk_no;
+		return BackupService.BACKUP_FILE_PATH + "/" + service.getIdentifier() + "/" + file_id + "_" + chunk_no;
 	}
 }

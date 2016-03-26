@@ -77,6 +77,9 @@ public class BackupInitiator implements ProtocolProcessor {
 		}
 		
 		public void run() {
+			if(!active())
+				return;
+			
 			sendChunk();
 			new java.util.Timer().schedule( 
 			        new java.util.TimerTask() {
@@ -90,6 +93,9 @@ public class BackupInitiator implements ProtocolProcessor {
 		}
 		
 		private void eval() {
+			if(!active())
+				return;
+			
 			if(current_attempt == 4) {
 				System.out.println("Ending backup of chunk #" + chunk.getchunkNum() + " from file " + split_file.getFileId() + " (replcation degree " + responded_peers.size() + ", attempt " + current_attempt + ")");
 				if(response_socket != null) {
@@ -122,6 +128,9 @@ public class BackupInitiator implements ProtocolProcessor {
 		
 		// Assumes it is interested in message
 		public void handle(ProtocolInstance message) {
+			if(!active())
+				return;
+			
 			ProtocolHeader header = message.getHeader();
 			int peer_id = header.getSender_id();
 			if(!responded_peers.contains(peer_id)) {
@@ -168,7 +177,7 @@ public class BackupInitiator implements ProtocolProcessor {
 	
 	@Override
 	public Boolean handle(ProtocolInstance message) {
-		if(!active)
+		if(!active())
 			return false;
 		
 		for(int i = 0; i < senders.size(); ++i) {

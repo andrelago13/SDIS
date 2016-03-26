@@ -14,49 +14,42 @@ public class MetadataManager implements Serializable {
 	// TODO store metadata as text rather than object for easier reading and manipulation
 	
 	private static final String METADATA_PATH = "resources/metadata/backup_metadata";
-	private static MetadataManager instance = null;
+	private int id;
 	
 	private ArrayList<FileBackupInfo> own_files = null;
 	private ArrayList<FileBackupInfo> peer_files = null;
 
-	public static MetadataManager getInstance() {
-		if(instance == null) {
-			try {
-				FileInputStream fin = new FileInputStream(METADATA_PATH);
-				ObjectInputStream ois = new ObjectInputStream(fin);
-				instance = (MetadataManager) ois.readObject();
-				ois.close();
-			} catch (IOException | ClassNotFoundException e) {
-				instance = new MetadataManager();
-			}
+	public void getFromFile() {
+		try {
+			FileInputStream fin = new FileInputStream(getFullPath());
+			ObjectInputStream ois = new ObjectInputStream(fin);
+			MetadataManager file = (MetadataManager) ois.readObject();
+			ois.close();
+			
+			this.own_files = file.own_files;
+			this.peer_files = file.peer_files;
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
 		}
-		
-		return instance;
 	}
+
 	
-	public static MetadataManager updateFromFile() throws IOException, ClassNotFoundException {
-		FileInputStream fin = new FileInputStream(METADATA_PATH);
-		ObjectInputStream ois = new ObjectInputStream(fin);
-		instance = (MetadataManager) ois.readObject();
-		ois.close();
-		return instance;
-	}
-	
-	public static MetadataManager resetInstance() {
-		instance = new MetadataManager();
-		return instance;
-	}
-	
-	private MetadataManager() {
+	public MetadataManager(int id) {
+		this.id = id;
 		own_files = new ArrayList<FileBackupInfo>();
 		peer_files = new ArrayList<FileBackupInfo>();
+		getFromFile();
 	}
 	
 	public void backup() throws IOException {
-		FileOutputStream fout = new FileOutputStream(METADATA_PATH);
+		FileOutputStream fout = new FileOutputStream(getFullPath());
 		ObjectOutputStream oos = new ObjectOutputStream(fout);   
-		oos.writeObject(instance);
+		oos.writeObject(this);
 		oos.close();
+	}
+	
+	public String getFullPath() {
+		return METADATA_PATH + "_" + id;
 	}
 	
 	public ArrayList<FileBackupInfo> ownFilesInfo() {

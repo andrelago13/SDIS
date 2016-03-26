@@ -5,7 +5,6 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
@@ -13,7 +12,6 @@ import filesystem.metadata.MetadataManager;
 import backupservice.cli.CLIProtocolInstance;
 import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
-import backupservice.protocols.processors.BackupInitiator;
 import backupservice.protocols.processors.ProtocolProcessor;
 import backupservice.protocols.processors.ProtocolProcessorFactory;
 import network.Communicator;
@@ -77,7 +75,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 	}
 	
 	public void initiateMetadata() {
-		metadata = MetadataManager.getInstance();		
+		metadata = new MetadataManager(identifier);		
 	}
 	
 	public void initiateOwnSocket() throws IOException {
@@ -131,11 +129,38 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 	public void terminate() {
 		try {
 			socket_control.dispose();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Unable to dispose of CONTROL channel socket.");
+		}
+		try {
 			socket_backup.dispose();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Unable to dispose of BACKUP channel socket.");
+		}
+		try {
 			socket_restore.dispose();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Unable to dispose of RESTORE channel socket.");
+		}
+		try {
 			own_socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.out.println("Unable to dispose of COMMAND channel socket.");
+		}
+		
+		for(int i = 0; i < processors.size(); ++i) {
+			processors.get(i).terminate();
+		}
+		
+		try {
+			metadata.backup();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("Unable to backup metadata.");
 		}
 	}
 
@@ -143,6 +168,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 	public void handle(DatagramPacket response) {
 		//System.out.println("Handle UDP");
 		//System.out.println(new String(response.getData(), 0, response.getLength()));
+		
+		
 		
 		Boolean handled = false;
 		ProtocolInstance response_instance = Protocols.parseMessage(new String(response.getData(), 0, response.getLength()));
