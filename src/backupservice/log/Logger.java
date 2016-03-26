@@ -80,8 +80,13 @@ public class Logger {
 	
 	private static String getDate() {
 		LocalDateTime time = LocalDateTime.now();
-		// TODO give all numbers fixed digits
-		return "" + time.getDayOfMonth() + "/" + time.getMonthValue() + "/" + time.getYear() + " " + time.getHour() + ":" + time.getMinute() + ":" + time.getSecond() + "." + time.getNano()/1000000;
+		return "" + String.format("%02d", time.getDayOfMonth()) + "/" + 
+		String.format("%02d", time.getMonthValue()) + "/" + 
+		String.format("%04d", time.getYear()) + " " + 
+		String.format("%02d", time.getHour()) + ":" + 
+		String.format("%02d", time.getMinute()) + ":" + 
+		String.format("%02d", time.getSecond()) + "." + 
+		String.format("%03d", time.getNano()/1000000);
 	}
 	
 	public void appendLog(String log) {
