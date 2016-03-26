@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 
@@ -117,6 +118,9 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
+		System.out.println("CONTROL CHANNEL: " + socket_control.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
+		System.out.println("BACKUP CHANNEL: " + socket_backup.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
+		System.out.println("RESTORE CHANNEL: " + socket_restore.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
 		
 		/*// FIXME remove this after testing
 		BackupInitiator t = new BackupInitiator(this, "resources/test_read.txt", 1, null);

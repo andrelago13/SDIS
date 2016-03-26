@@ -43,4 +43,8 @@ public class MulticastSocketWrapper extends MulticastSocket  {
 	public void send(String message) throws IOException {
 		send(message.getBytes(), message.length());
 	}
+
+	public InetAddress getGroup() {
+		return group;
+	}
 }

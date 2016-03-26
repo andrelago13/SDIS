@@ -63,7 +63,7 @@ public class ResponseGetterThread extends Thread {
 		if(datagram_socket == null || datagram_handler == null || buf_len < 1 || enabled)
 			return;
 		
-		System.out.println("Awaiting for datagram packets at port " + datagram_socket.getLocalPort());
+		//System.out.println("Awaiting for datagram packets at port " + datagram_socket.getLocalPort());
 		
 		enabled = true;
 		
@@ -113,7 +113,7 @@ public class ResponseGetterThread extends Thread {
 			return;
 		}
 		
-		System.out.println("Awaiting for TCP connections at port " + tcp_socket.getLocalPort());
+		//System.out.println("Awaiting for TCP connections at port " + tcp_socket.getLocalPort());
 		
 		enabled = true;
 		
@@ -124,7 +124,7 @@ public class ResponseGetterThread extends Thread {
 				
 				if(enabled) {
 					String request = inFromClient.readLine();
-					System.out.println("Received: \"" + request + "\"");
+					//System.out.println("Received: \"" + request + "\"");
 					
 					tcp_handler.handle(request, connectionSocket);
 				}				
@@ -140,7 +140,7 @@ public class ResponseGetterThread extends Thread {
 						break;
 					}
 
-					System.out.println("Received: \"" + request + "\"");
+					//System.out.println("Received: \"" + request + "\"");
 
 					// Dispatches a new thread to avoid blocking upcoming messages
 					new Thread( new Runnable() {
