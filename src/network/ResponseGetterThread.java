@@ -78,7 +78,7 @@ public class ResponseGetterThread extends Thread {
 				return;
 			}
 			
-			datagram_handler.handle(packet);
+			datagram_handler.handle(this, packet);
 		} else {
 			while(enabled) {
 				byte[] buf = new byte[buf_len];
@@ -93,10 +93,11 @@ public class ResponseGetterThread extends Thread {
 				
 				if(enabled) {
 					// Dispatches a new thread to avoid blocking upcoming messages
+					final ResponseGetterThread t = this;
 					new Thread( new Runnable() {
 					    @Override
 					    public void run() {
-					    	datagram_handler.handle(packet);
+					    	datagram_handler.handle(t, packet);
 					    }
 					}).start();
 				}
@@ -126,7 +127,7 @@ public class ResponseGetterThread extends Thread {
 					String request = inFromClient.readLine();
 					//System.out.println("Received: \"" + request + "\"");
 					
-					tcp_handler.handle(request, connectionSocket);
+					tcp_handler.handle(this, request, connectionSocket);
 				}				
 			} else {
 				while(enabled) {
@@ -143,10 +144,11 @@ public class ResponseGetterThread extends Thread {
 					//System.out.println("Received: \"" + request + "\"");
 
 					// Dispatches a new thread to avoid blocking upcoming messages
+					final ResponseGetterThread t = this;
 					new Thread( new Runnable() {
 					    @Override
 					    public void run() {
-							tcp_handler.handle(request, connectionSocket);
+							tcp_handler.handle(t, request, connectionSocket);
 					    }
 					}).start();
 				}

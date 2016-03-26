@@ -132,14 +132,18 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		System.out.println("CONTROL CHANNEL: " + socket_control.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
 		System.out.println("BACKUP CHANNEL: " + socket_backup.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
 		System.out.println("RESTORE CHANNEL: " + socket_restore.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
-		
-		/*// FIXME remove this after testing
-		BackupInitiator t = new BackupInitiator(this, "resources/test_read.txt", 1, null);
-		processors.add(t);
-		t.initiate();*/
 	}
 
 	public void terminate() {
+		if(control_receiver_thread != null)
+			control_receiver_thread.interrupt();
+		if(backup_receiver_thread != null)
+			backup_receiver_thread.interrupt();
+		if(restore_receiver_thread != null)
+			restore_receiver_thread.interrupt();
+		if(command_receiver_thread != null)
+			command_receiver_thread.interrupt();
+		
 		try {
 			socket_control.dispose();
 		} catch (IOException e) {
@@ -178,34 +182,46 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 	}
 
 	@Override
-	public void handle(DatagramPacket response) {
-		//System.out.println("Handle UDP");
-		//System.out.println(new String(response.getData(), 0, response.getLength()));
-		
-		
+	public void handle(ResponseGetterThread sender, DatagramPacket response) {
+		if(sender == control_receiver_thread) {
+			logAndShow("CONTROL channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");
+		} else if(sender == backup_receiver_thread) {
+			logAndShow("BACKUP channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");
+		} else if(sender == restore_receiver_thread) {
+			logAndShow("RESTORE channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");
+		} else {
+			logAndShow("Unknown channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");			
+		}
 		
 		Boolean handled = false;
 		ProtocolInstance response_instance = Protocols.parseMessage(new String(response.getData(), 0, response.getLength()));
-		if(response_instance == null)
+		if(response_instance == null) {
+			logAndShow("Message received was not a valid Protocol message.");
 			return;
+		}
 		
 		for(int i = 0; i < processors.size(); ++i) {
 			if(processors.get(i).handle(response_instance)) {
 				handled = true;
+				logAndShow("Message received was handled by existing processor.");
 				break;
 			}
 		}
 		if(!handled) {
 			ProtocolProcessor processor = ProtocolProcessorFactory.getProcessor(response_instance, this);
 			if(processor != null) {
+				logAndShow("Message received will be handled by a new processor.");
 				addProcessor(processor);
 				processor.initiate();
+			} else {
+				logAndShow("Message received does not trigger any processor");				
 			}
 		}
 	}
 
 	@Override
-	public void handle(String response, Socket connection_socket) {
+	public void handle(ResponseGetterThread sender, String response, Socket connection_socket) {
+		// TODO logs
 		System.out.println("Handle TCP");
 		System.out.println(response);
 		
