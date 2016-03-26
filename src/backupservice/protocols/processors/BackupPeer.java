@@ -1,10 +1,17 @@
 package backupservice.protocols.processors;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 import backupservice.BackupService;
@@ -58,6 +65,8 @@ public class BackupPeer implements ProtocolProcessor {
 		            @Override
 		            public void run() {
 		                try {
+		                	System.out.println("Sending");
+		                	System.out.println(reply.toString());
 							service.getControlSocket().send(reply.toString());
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -135,7 +144,7 @@ public class BackupPeer implements ProtocolProcessor {
 		active = true;
 		try {
 			storeChunk();
-		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			System.err.println("Unable to store received chunk");
 			terminate();
@@ -155,11 +164,15 @@ public class BackupPeer implements ProtocolProcessor {
 		service.removeProcessor(this);
 	}
 	
-	private void storeChunk() throws FileNotFoundException, UnsupportedEncodingException {
+	private void storeChunk() throws IOException {
 		// TODO guardar só se houver espaço
+		File f = new File(getChunkPath());
+		f.getParentFile().mkdirs(); 
+		f.delete();
+		f.createNewFile();
 		PrintWriter writer = new PrintWriter(getChunkPath(), "UTF-8");
 		writer.print(chunk_content);
-		writer.close();
+		writer.close();		
 	}
 
 	private String getChunkPath() {

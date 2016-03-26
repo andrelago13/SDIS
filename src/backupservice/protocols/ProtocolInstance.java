@@ -36,4 +36,8 @@ public class ProtocolInstance {
 		return ArrayUtils.appendArrays(header.toBytes(), body.getContent());
 	}
 
+	@Override
+	public String toString() {
+		return new String(toBytes());
+	}
 }

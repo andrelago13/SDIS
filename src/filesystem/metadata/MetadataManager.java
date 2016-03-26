@@ -11,6 +11,8 @@ import java.util.ArrayList;
 @SuppressWarnings("serial")
 public class MetadataManager implements Serializable {
 	
+	// TODO store metadata as text rather than object for easier reading and manipulation
+	
 	private static final String METADATA_PATH = "resources/metadata/backup_metadata";
 	private static MetadataManager instance = null;
 	
