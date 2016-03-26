@@ -60,7 +60,7 @@ public class BackupPeer implements ProtocolProcessor {
 							service.getControlSocket().send(reply.toString());
 						} catch (IOException e) {
 							e.printStackTrace();
-							System.err.println("Unable to reply STORED");
+							service.logAndShowError("Unable to reply STORED");
 						}
 		            }
 		        }, 
@@ -141,7 +141,7 @@ public class BackupPeer implements ProtocolProcessor {
 			storeChunk();
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.err.println("Unable to store received chunk");
+			service.logAndShowError("Unable to store received chunk");
 			terminate();
 			return;
 		}

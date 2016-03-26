@@ -57,7 +57,7 @@ public class BackupInitiator implements ProtocolProcessor {
 		}
 		
 		private void sendChunk() {
-			System.out.println("Backing up chunk #" + chunk.getchunkNum() + " from file " + split_file.getFileId() + " (replcation degree " + this.replication_deg + ", attempt " + current_attempt + ")");
+			service.logAndShow("Backing up chunk #" + chunk.getchunkNum() + ", file " + split_file.getFileId() + " (rep deg desired " + this.replication_deg + ", attempt " + current_attempt + ")");
 			ProtocolInstance instance = Protocols.putChunkProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR, 
 					service.getIdentifier(), split_file.getFileId(), chunk.getchunkNum(), replication_deg, chunk.getchunkContent());
 			
@@ -97,25 +97,25 @@ public class BackupInitiator implements ProtocolProcessor {
 				return;
 			
 			if(current_attempt == 4) {
-				System.out.println("Ending backup of chunk #" + chunk.getchunkNum() + " from file " + split_file.getFileId() + " (replcation degree " + responded_peers.size() + ", attempt " + current_attempt + ")");
+				service.logAndShow("Ending backup chunk #" + chunk.getchunkNum() + ", file " + split_file.getFileId() + " (rep deg achieved " + responded_peers.size() + ", attempt " + current_attempt + ")");
 				if(response_socket != null) {
 					try {
 						SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.NOT_ENOUGH_REPLICATION.ordinal()]);
 					} catch (IOException e) {
 						e.printStackTrace();
-						System.err.println("Unable to confirm conditional success to TCP client.");
+						service.logAndShowError("Unable to confirm conditional success to TCP client.");
 					}
 				}
 				terminate();
 			} else {
 				if(responded_peers.size() >= replication_deg) {
-					System.out.println("Ending backup of chunk #" + chunk.getchunkNum() + " from file " + split_file.getFileId() + " (replcation degree " + responded_peers.size() + ", attempt " + current_attempt + ")");
+					service.logAndShow("Ending backup of chunk #" + chunk.getchunkNum() + ", file " + split_file.getFileId() + " (rep deg achieved " + responded_peers.size() + ", attempt " + current_attempt + ")");
 					if(response_socket != null) {
 						try {
 							SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.SUCCESS.ordinal()]);
 						} catch (IOException e) {
 							e.printStackTrace();
-							System.err.println("Unable to confirm success to TCP client.");
+							service.logAndShowError("Unable to confirm success to TCP client.");
 						}
 					}
 					terminate();
@@ -137,11 +137,11 @@ public class BackupInitiator implements ProtocolProcessor {
 				responded_peers.add(peer_id);
 				service.getMetadata().updateOwnFile(split_file.getFileId(), chunk.getchunkNum(), chunk.getreplicationNumber(), responded_peers.size(), chunk.getchunkContent().length);
 				try {
-					System.out.println("Backing up metadata");
+					service.logAndShow("Backing up metadata");
 					service.getMetadata().backup();
 				} catch (IOException e) {
 					e.printStackTrace();
-					System.err.println("Unable to backup metadata");
+					service.logAndShowError("Unable to backup metadata");
 				}
 			}
 		}

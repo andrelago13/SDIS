@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import filesystem.metadata.MetadataManager;
 import backupservice.cli.CLIProtocolInstance;
 import backupservice.log.Logger;
+import backupservice.log.LoggerInterface;
 import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
 import backupservice.protocols.processors.ProtocolProcessor;
@@ -21,7 +22,7 @@ import network.ResponseGetterThread;
 import network.ResponseHandler;
 import network.TCPResponseHandler;
 
-public class BackupService implements ResponseHandler, TCPResponseHandler {
+public class BackupService implements ResponseHandler, TCPResponseHandler, LoggerInterface {
 	
 	private final static int START_SOCKET_NO = 8080;
 	
@@ -83,7 +84,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 			logger = new Logger(identifier);
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.err.println("Unable to initialize logger");
+			logAndShowError("Unable to initialize logger.");
 		}
 	}
 	
@@ -112,11 +113,13 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 	}
 
 	public void initiate() {
+		logAndShow("Backup Service initializing...");
+		
 		// INITIALIZE THREAD OBJECTS
-		control_receiver_thread = socket_control.multipleUsageResponseThread(this, Protocols.MAX_PACKET_LENGTH);
-		backup_receiver_thread = socket_backup.multipleUsageResponseThread(this, Protocols.MAX_PACKET_LENGTH);
-		restore_receiver_thread = socket_restore.multipleUsageResponseThread(this, Protocols.MAX_PACKET_LENGTH);
-		command_receiver_thread = new ResponseGetterThread(this, own_socket, false);
+		control_receiver_thread = socket_control.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH);
+		backup_receiver_thread = socket_backup.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH);
+		restore_receiver_thread = socket_restore.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH);
+		command_receiver_thread = new ResponseGetterThread(this, this, own_socket, false);
 		
 		// START RUNNING THREADS
 		control_receiver_thread.start();
@@ -125,13 +128,15 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		command_receiver_thread.start();
 		
 		try {
-			System.out.println("Listening for commands at " + InetAddress.getLocalHost().getHostAddress() + ":" + own_socket.getLocalPort());
+			logAndShow("Listening for commands at " + InetAddress.getLocalHost().getHostAddress() + ":" + own_socket.getLocalPort());
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			logAndShow("Listening for commands at localhost:" + own_socket.getLocalPort());
 		}
-		System.out.println("CONTROL CHANNEL: " + socket_control.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
-		System.out.println("BACKUP CHANNEL: " + socket_backup.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
-		System.out.println("RESTORE CHANNEL: " + socket_restore.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
+		logAndShow("CONTROL channel started at " + socket_control.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
+		logAndShow("BACKUP channel started at " + socket_backup.getGroup().getHostAddress() + ":" + socket_backup.getLocalPort());
+		logAndShow("RESTORE channel started at " + socket_restore.getGroup().getHostAddress() + ":" + socket_restore.getLocalPort());
+
+		logAndShow("Backup Service initialized");
 	}
 
 	public void terminate() {
@@ -148,25 +153,25 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 			socket_control.dispose();
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.out.println("Unable to dispose of CONTROL channel socket.");
+			logAndShowError("Unable to dispose of CONTROL channel socket.");
 		}
 		try {
 			socket_backup.dispose();
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.out.println("Unable to dispose of BACKUP channel socket.");
+			logAndShowError("Unable to dispose of BACKUP channel socket.");
 		}
 		try {
 			socket_restore.dispose();
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.out.println("Unable to dispose of RESTORE channel socket.");
+			logAndShowError("Unable to dispose of RESTORE channel socket.");
 		}
 		try {
 			own_socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.out.println("Unable to dispose of COMMAND channel socket.");
+			logAndShowError("Unable to dispose of COMMAND channel socket.");
 		}
 		
 		for(int i = 0; i < processors.size(); ++i) {
@@ -177,7 +182,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 			metadata.backup();
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.out.println("Unable to backup metadata.");
+			logAndShowError("Unable to backup metadata.");
 		}
 	}
 
@@ -190,7 +195,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		} else if(sender == restore_receiver_thread) {
 			logAndShow("RESTORE channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");
 		} else {
-			logAndShow("Unknown channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");			
+			logAndShow("Unknown UDP channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");			
 		}
 		
 		Boolean handled = false;
@@ -221,22 +226,25 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 
 	@Override
 	public void handle(ResponseGetterThread sender, String response, Socket connection_socket) {
-		// TODO logs
-		System.out.println("Handle TCP");
-		System.out.println(response);
+		if(sender == command_receiver_thread) {
+			logAndShow("COMMAND channel received \"" + response + "\".");			
+		} else {
+			logAndShow("Unknown TCP channel received \"" + response + "\".");	
+		}
 		
 		ProtocolProcessor processor = null;
 		try {
 			processor = ProtocolProcessorFactory.getProcessor(new CLIProtocolInstance(response), this, connection_socket);
 		} catch (Exception e) {
-			System.err.println("Invalid TCP command received =>" + response);
+			logAndShowError("Command received was invalid.");
 			return;
 		}
 		if(processor != null) {
+			logAndShowError("Command received triggered a new processor.");
 			processors.add(processor);
 			processor.initiate();
 		} else {
-			System.err.println("Invalid TCP command received =>" + response);	
+			logAndShowError("Command received does not trigger any processor.");
 			return;
 		}
 	}

@@ -8,6 +8,8 @@ import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import backupservice.log.LoggerInterface;
+
 public class ResponseGetterThread extends Thread {
 	
 	public static enum Type {
@@ -21,31 +23,34 @@ public class ResponseGetterThread extends Thread {
 
 	private ServerSocket tcp_socket = null;
 	private TCPResponseHandler tcp_handler = null;
+	private LoggerInterface logger;
 	
 	private Boolean single_usage = true;
 	private Boolean enabled = false;
 	
 	private Type type = null;
 	
-	public ResponseGetterThread(ResponseHandler handler, DatagramSocket socket, int max_length) {
-		this(handler, socket, max_length, true);
+	public ResponseGetterThread(ResponseHandler handler, LoggerInterface logger, DatagramSocket socket, int max_length) {
+		this(handler, logger, socket, max_length, true);
 	}
 
-	public ResponseGetterThread(ResponseHandler handler, DatagramSocket socket, int max_length, Boolean single_usage) {
+	public ResponseGetterThread(ResponseHandler handler, LoggerInterface logger, DatagramSocket socket, int max_length, Boolean single_usage) {
 		type = Type.DATAGRAM;
 		
+		this.logger = logger;
 		this.datagram_handler = handler;
 		this.datagram_socket = socket;
 		buf_len = max_length;
 		this.single_usage = single_usage;
 	}
 
-	public ResponseGetterThread(TCPResponseHandler handler, ServerSocket socket) {
-		this(handler, socket, true);
+	public ResponseGetterThread(TCPResponseHandler handler, LoggerInterface logger, ServerSocket socket) {
+		this(handler, logger, socket, true);
 	}
 
-	public ResponseGetterThread(TCPResponseHandler handler, ServerSocket socket, Boolean single_usage) {
+	public ResponseGetterThread(TCPResponseHandler handler, LoggerInterface logger, ServerSocket socket, Boolean single_usage) {
 		type = Type.TCP;
+		this.logger = logger;
 		this.tcp_handler = handler;
 		this.tcp_socket = socket;
 		this.single_usage = single_usage;
@@ -62,8 +67,6 @@ public class ResponseGetterThread extends Thread {
 	private void run_datagram() {
 		if(datagram_socket == null || datagram_handler == null || buf_len < 1 || enabled)
 			return;
-		
-		//System.out.println("Awaiting for datagram packets at port " + datagram_socket.getLocalPort());
 		
 		enabled = true;
 		
@@ -104,7 +107,7 @@ public class ResponseGetterThread extends Thread {
 			}
 		}
 		
-		System.out.println("Not listening to port " + datagram_socket.getLocalPort() + " anymore");
+		logger.logAndShow("Not listening to UDP port " + datagram_socket.getLocalPort() + " anymore.");
 		
 		enabled = false;
 	}
@@ -113,8 +116,6 @@ public class ResponseGetterThread extends Thread {
 		if(tcp_socket == null || tcp_handler == null || enabled) {
 			return;
 		}
-		
-		//System.out.println("Awaiting for TCP connections at port " + tcp_socket.getLocalPort());
 		
 		enabled = true;
 		
@@ -125,7 +126,6 @@ public class ResponseGetterThread extends Thread {
 				
 				if(enabled) {
 					String request = inFromClient.readLine();
-					//System.out.println("Received: \"" + request + "\"");
 					
 					tcp_handler.handle(this, request, connectionSocket);
 				}				
@@ -141,8 +141,6 @@ public class ResponseGetterThread extends Thread {
 						break;
 					}
 
-					//System.out.println("Received: \"" + request + "\"");
-
 					// Dispatches a new thread to avoid blocking upcoming messages
 					final ResponseGetterThread t = this;
 					new Thread( new Runnable() {
@@ -156,8 +154,8 @@ public class ResponseGetterThread extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		System.out.println("Not listening to port " + tcp_socket.getLocalPort() + " anymore");
+
+		logger.logAndShow("Not listening to TCP port " + tcp_socket.getLocalPort() + " anymore.");
 		
 		enabled = false;
 	}

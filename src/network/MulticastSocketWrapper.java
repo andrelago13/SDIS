@@ -5,6 +5,8 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
+import backupservice.log.LoggerInterface;
+
 public class MulticastSocketWrapper extends MulticastSocket  {
 	
 	private InetAddress group = null;
@@ -28,12 +30,12 @@ public class MulticastSocketWrapper extends MulticastSocket  {
 		close();
 	}
 
-	public ResponseGetterThread singleUsageResponseThread(ResponseHandler handler, int max_length) {
-		return new ResponseGetterThread(handler, this, max_length, true);
+	public ResponseGetterThread singleUsageResponseThread(ResponseHandler handler, LoggerInterface logger, int max_length) {
+		return new ResponseGetterThread(handler, logger, this, max_length, true);
 	}
 
-	public ResponseGetterThread multipleUsageResponseThread(ResponseHandler handler, int max_length) {
-		return new ResponseGetterThread(handler, this, max_length, false);
+	public ResponseGetterThread multipleUsageResponseThread(ResponseHandler handler, LoggerInterface logger, int max_length) {
+		return new ResponseGetterThread(handler, logger, this, max_length, false);
 	}
 
 	public void send(byte[] message, int length) throws IOException {
