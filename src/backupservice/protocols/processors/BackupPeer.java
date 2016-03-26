@@ -86,12 +86,14 @@ public class BackupPeer implements ProtocolProcessor {
 			if(header.getMessage_type() == Protocols.MessageType.PUTCHUNK) {
 				generateDelay();
 				replyWithDelay();
+				return true;
 			} else if (header.getMessage_type() == Protocols.MessageType.STORED) {
 				int sender = header.getSender_id();
 				if(!responded_peers.contains(sender)) {
 					responded_peers.add(sender);
 					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size(), chunk_content.length);
 				}
+				return true;
 			}
 		}
 		

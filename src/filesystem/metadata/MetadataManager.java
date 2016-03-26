@@ -30,7 +30,7 @@ public class MetadataManager implements Serializable {
 			this.own_files = file.own_files;
 			this.peer_files = file.peer_files;
 		} catch (IOException | ClassNotFoundException e) {
-			e.printStackTrace();
+			// do nothing
 		}
 	}
 

@@ -243,7 +243,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 				addProcessor(processor);
 				processor.initiate();
 			} else {
-				logAndShow("Message received does not trigger any processor");				
+				logAndShow("Message received does not trigger any new processor");				
 			}
 		}
 	}
@@ -270,11 +270,11 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			return;
 		}
 		if(processor != null) {
-			logAndShowError("Command received triggered a new processor.");
+			logAndShow("Command received triggered a new processor.");
 			processors.add(processor);
 			processor.initiate();
 		} else {
-			logAndShowError("Command received does not trigger any processor.");
+			logAndShowError("Command received does not trigger any new processor.");
 			return;
 		}
 	}
