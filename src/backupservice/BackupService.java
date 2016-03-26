@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Timer;
 
 import filesystem.metadata.MetadataManager;
 import backupservice.cli.CLIProtocolInstance;
@@ -42,6 +43,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	private ResponseGetterThread backup_receiver_thread = null;
 	private ResponseGetterThread restore_receiver_thread = null;
 	private ResponseGetterThread command_receiver_thread = null;
+	private Timer timer = null;
 	
 	private ArrayList<ProtocolProcessor> processors = null;
 	
@@ -60,6 +62,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		processors = new ArrayList<ProtocolProcessor>();
 		initiateMetadata();
 		initiateLogger();
+		initiateTimer();
 	}
 	
 	public BackupService(int identifier, String control_address, int control_port, String backup_address, int backup_port, String restore_address, int restore_port) throws IllegalArgumentException, IOException {
@@ -77,6 +80,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		processors = new ArrayList<ProtocolProcessor>();
 		initiateMetadata();
 		initiateLogger();
+		initiateTimer();
 	}
 	
 	private void initiateLogger() {
@@ -86,6 +90,10 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			e.printStackTrace();
 			logAndShowError("Unable to initialize logger.");
 		}
+	}
+	
+	private void initiateTimer() {
+		timer = new Timer();
 	}
 	
 	private void initiateMetadata() {
@@ -98,6 +106,10 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	
 	public int getIdentifier() {
 		return identifier;
+	}
+	
+	public Timer getTimer() {
+		return timer;
 	}
 	
 	public MulticastSocketWrapper getControlSocket() {
@@ -141,6 +153,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 
 	public void terminate() {
 		logAndShow("Backup Service terminating...");
+		
+		timer.cancel();
 		
 		if(control_receiver_thread != null) {
 			try{
@@ -196,6 +210,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			logAndShowError("Unable to dispose of COMMAND channel socket.");
 		}
 		
+		System.out.println(processors.size());
 		for(int i = 0; i < processors.size(); ++i) {
 			processors.get(i).terminate();
 		}
@@ -211,7 +226,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	}
 
 	@Override
-	public void handle(ResponseGetterThread sender, DatagramPacket response) {
+	public void handle(ResponseGetterThread sender, DatagramPacket response) {		
 		if(sender == control_receiver_thread) {
 			logAndShow("CONTROL channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");
 		} else if(sender == backup_receiver_thread) {
@@ -228,6 +243,9 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			logAndShow("Message received was not a valid Protocol message.");
 			return;
 		}
+		
+		if(response_instance.getHeader().getSender_id() == identifier)
+			return;
 		
 		for(int i = 0; i < processors.size(); ++i) {
 			if(processors.get(i).handle(response_instance)) {

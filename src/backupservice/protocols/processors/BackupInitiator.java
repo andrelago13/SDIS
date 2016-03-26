@@ -81,7 +81,7 @@ public class BackupInitiator implements ProtocolProcessor {
 				return;
 			
 			sendChunk();
-			new java.util.Timer().schedule( 
+			service.getTimer().schedule( 
 			        new java.util.TimerTask() {
 			            @Override
 			            public void run() {
@@ -182,13 +182,7 @@ public class BackupInitiator implements ProtocolProcessor {
 		
 		for(int i = 0; i < senders.size(); ++i) {
 			if(senders.get(i).interested(message)) {
-				final ChunkSender sender = senders.get(i);
-				new Thread( new Runnable() {
-				    @Override
-				    public void run() {
-				    	sender.handle(message);
-				    }
-				}).start();
+				senders.get(i).handle(message);
 				return true;
 			}
 		}
@@ -238,6 +232,15 @@ public class BackupInitiator implements ProtocolProcessor {
 	
 	public void terminate() {
 		active = false;
+		
+		for(int i = 0; i < senders.size(); ++i) {
+			try {
+				senders.get(i).interrupt();
+			} catch (Exception e) {
+				// do nothing
+			}
+		}
+		
 		service.removeProcessor(this);
 	}
 

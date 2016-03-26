@@ -52,7 +52,7 @@ public class BackupPeer implements ProtocolProcessor {
 	}
 	
 	private void replyWithDelay(int delay) {
-		new java.util.Timer().schedule( 
+		service.getTimer().schedule( 
 		        new java.util.TimerTask() {
 		            @Override
 		            public void run() {
@@ -123,7 +123,7 @@ public class BackupPeer implements ProtocolProcessor {
 	}
 	
 	private void evalDelay(int delay) {
-		new java.util.Timer().schedule( 
+		service.getTimer().schedule( 
 		        new java.util.TimerTask() {
 		            @Override
 		            public void run() {
