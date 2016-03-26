@@ -1,6 +1,5 @@
 package filesystem;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,7 +13,7 @@ import java.util.Collections;
 
 public class FileManager 
 {
-	@SuppressWarnings("unchecked") @Deprecated 
+	@Deprecated 
 	public static SplitFile splitFile(String filename, int replicationNum, int chunkSize) throws IOException, NoSuchAlgorithmException
 	{
 		String fileIdHashed = utils.Hash.hashFile(filename, 0, replicationNum);
@@ -55,7 +54,6 @@ public class FileManager
 		return splitFile;	
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static SplitFile splitFile(String filename, int owner, int replicationNum, int chunkSize) throws IOException, NoSuchAlgorithmException
 	{
 		String fileIdHashed = utils.Hash.hashFile(filename, owner, replicationNum);

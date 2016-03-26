@@ -24,6 +24,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 	
 	private final static int START_SOCKET_NO = 8080;
 	
+	public static final String BACKUP_FILE_PATH = "resources/backups/";
+	
 	private int identifier;
 	
 	private MetadataManager metadata = null;
@@ -139,7 +141,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler {
 		for(int i = 0; i < processors.size(); ++i) {
 			if(processors.get(i).handle(response_instance)) {
 				handled = true;
-				// TODO maybe break here
+				break;
 			}
 		}
 		if(!handled) {

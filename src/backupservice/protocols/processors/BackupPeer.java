@@ -81,11 +81,22 @@ public class BackupPeer implements ProtocolProcessor {
 	
 	@Override
 	public Boolean handle(ProtocolInstance message) {
-		// TODO Responder a todos os PUTCHUNK (aguardar random (0-400ms) e responder STORED)
-		// TODO Ativar "escuta" por outros STORED (espera tempo máximo de delay e, se receber algum stored, volta a esperar) - sistema semelhante ao backupinitiator
-		// TODO guardar metadata
-		// TODO guardar só se houver espaço
-		return null;
+		ProtocolHeader header = message.getHeader();
+		
+		if(header.getFile_id().equals(file_id) && header.getChunk_no() == chunk_no && header.getSender_id() != service.getIdentifier()) {
+			if(header.getMessage_type() == Protocols.MessageType.PUTCHUNK) {
+				generateDelay();
+				replyWithDelay();
+			} else if (header.getMessage_type() == Protocols.MessageType.STORED) {
+				int sender = header.getSender_id();
+				if(!responded_peers.contains(sender)) {
+					responded_peers.add(sender);
+					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size(), chunk_content.length);
+				}
+			}
+		}
+		
+		return false;
 	}
 
 	@Override
@@ -125,8 +136,10 @@ public class BackupPeer implements ProtocolProcessor {
 		try {
 			storeChunk();
 		} catch (FileNotFoundException | UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			System.err.println("Unable to store received chunk");
+			terminate();
+			return;
 		}
 		generateDelay();
 		service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, 1, chunk_content.length);
@@ -143,10 +156,13 @@ public class BackupPeer implements ProtocolProcessor {
 	}
 	
 	private void storeChunk() throws FileNotFoundException, UnsupportedEncodingException {
-		// TODO acabar
-		PrintWriter writer = new PrintWriter("the-file-name.txt", "UTF-8");
+		// TODO guardar só se houver espaço
+		PrintWriter writer = new PrintWriter(getChunkPath(), "UTF-8");
 		writer.print(chunk_content);
 		writer.close();
 	}
 
+	private String getChunkPath() {
+		return BackupService.BACKUP_FILE_PATH + file_id + "_" + chunk_no;
+	}
 }
