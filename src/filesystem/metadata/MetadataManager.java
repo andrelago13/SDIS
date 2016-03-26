@@ -1,5 +1,6 @@
 package filesystem.metadata;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -42,6 +43,9 @@ public class MetadataManager implements Serializable {
 	}
 	
 	public void backup() throws IOException {
+		File f = new File(getFullPath());
+		f.getParentFile().mkdirs();
+		
 		FileOutputStream fout = new FileOutputStream(getFullPath());
 		ObjectOutputStream oos = new ObjectOutputStream(fout);   
 		oos.writeObject(this);
