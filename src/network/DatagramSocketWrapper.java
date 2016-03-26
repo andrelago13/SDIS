@@ -6,6 +6,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+import backupservice.log.LoggerInterface;
+
 public class DatagramSocketWrapper extends DatagramSocket {
 
 	public DatagramSocketWrapper() throws SocketException {
@@ -27,11 +29,11 @@ public class DatagramSocketWrapper extends DatagramSocket {
 		send(packet);
 	}
 
-	public ResponseGetterThread singleUsageResponseThread(ResponseHandler handler, int max_length) {
-		return new ResponseGetterThread(handler, this, max_length, true);
+	public ResponseGetterThread singleUsageResponseThread(ResponseHandler handler, LoggerInterface logger, int max_length) {
+		return new ResponseGetterThread(handler, logger, this, max_length, true);
 	}
 
-	public ResponseGetterThread multipleUsageResponseThread(ResponseHandler handler, int max_length) {
-		return new ResponseGetterThread(handler, this, max_length, false);
+	public ResponseGetterThread multipleUsageResponseThread(ResponseHandler handler, LoggerInterface logger, int max_length) {
+		return new ResponseGetterThread(handler, logger, this, max_length, false);
 	}
 }
