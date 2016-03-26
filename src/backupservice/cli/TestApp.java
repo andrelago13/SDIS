@@ -5,15 +5,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.Scanner;
 
+
+
+import backupservice.BackupService;
 import backupservice.protocols.processors.BackupInitiator;
 import backupservice.protocols.processors.BackupInitiator.EndCondition;
 
 public class TestApp {
-
+	
+	private static BackupService service;
 	public static String LocalIp;
 	public static int LocalPort;
 
@@ -26,21 +28,21 @@ public class TestApp {
 		try {
 			socket = new Socket(LocalIp, LocalPort);
 		} catch (IOException e) {
-			System.err.println("Cannot create socket!!");
+			service.logAndShowError("Cannot create socket!!");
 			e.printStackTrace();
 		}
 		PrintWriter output = null;
 		try {
 			output = new PrintWriter(socket.getOutputStream(), true);
 		} catch (IOException e) {
-			System.err.println("Cannot create PrintWriter output!!");
+			service.logAndShowError("Cannot create PrintWriter output!!");
 			e.printStackTrace();
 		}
 		BufferedReader input = null;
 		try {
 			input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		} catch (IOException e) {
-			System.err.println("Cannot create BufferedReader input!!");
+			service.logAndShowError("Cannot create BufferedReader input!!");
 			e.printStackTrace();
 		}
 
@@ -65,12 +67,12 @@ public class TestApp {
 			request += "DELETE " + commandInfo[0];
 			break;
 		case "ERROR":
-			System.out.println("Invalid operation!!! Type -> java TestApp HELP\n for more help");
+			service.logAndShow("Invalid operation!!! Type -> java TestApp HELP\n for more help");
 			break;
 		case "EXIT":
 			break;
 		case "HELP":
-			System.out.println("Protocols availables:\n\n" + "Backup file:\n Press:BACKUP peer_ap file replicationDegree\n\n"
+			service.show("Protocols availables:\n\n" + "Backup file:\n Press:BACKUP peer_ap file replicationDegree\n\n"
 					+ "Restore file:\n Press:RESTORE peer_ap file\n\n" 
 					+ "Reclaim file:\n Press:RECLAIM peer_ap space\n\n"
 					+ "Delete file:\n Press:DELETE peer_ap file\n\n"
@@ -79,41 +81,41 @@ public class TestApp {
 		}
 		
 		output.println(request);
-		System.out.println("Request sent -> " + request);
+		service.logAndShow("Request sent -> " + request);
 		
 		String resp = "";
 		try {
 			resp = input.readLine();
 		} catch (IOException e) {
-			System.err.println("Cannot read resp from BufferedReader input!!");
+			service.logAndShowError("Cannot read resp from BufferedReader input!!");
 			e.printStackTrace();
 		}
-		System.out.println("Response received -> " + resp);
+		service.logAndShow("Response received -> " + resp);
 		
 		if(resp.equals("0"))
-			System.out.println("Command successful!");
+			service.logAndShow("Command successful!");
 		else if(resp.equals("1"))
-			System.out.println("Command partially successful!");
+			service.logAndShow("Command partially successful!");
 		else if(resp.equals("-1"))
-			System.err.println("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
+			service.logAndShow("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
 		else if(resp.equals("-2"))
-			System.err.println("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
+			service.logAndShow("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
 		else if(resp.equals("-3"))
-			System.err.println("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
+			service.logAndShow("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
 		else if(resp.equals("-4"))
-			System.err.println("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
+			service.logAndShow("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
 
 		output.close();
 		try {
 			input.close();
 		} catch (IOException e) {			
-			System.err.println("Cannot close BufferedReader input!!");
+			service.logAndShowError("Cannot close BufferedReader input!!");
 			e.printStackTrace();
 		}
 		try {
 			socket.close();
 		} catch (IOException e) {
-			System.err.println("Cannot close socket!!");
+			service.logAndShowError("Cannot close socket!!");
 			e.printStackTrace();
 		}
 		
@@ -141,7 +143,7 @@ public class TestApp {
 			}
 		}
 		else
-			System.err.println("You have to indicate the ip and port or just the port of the Tcp Client!");
+			service.logAndShowError("You have to indicate the ip and port or just the port of the Tcp Client!");
 
 		String response = "";
 
