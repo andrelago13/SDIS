@@ -140,14 +140,36 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	}
 
 	public void terminate() {
-		if(control_receiver_thread != null)
-			control_receiver_thread.interrupt();
-		if(backup_receiver_thread != null)
-			backup_receiver_thread.interrupt();
-		if(restore_receiver_thread != null)
-			restore_receiver_thread.interrupt();
-		if(command_receiver_thread != null)
-			command_receiver_thread.interrupt();
+		logAndShow("Backup Service terminating...");
+		
+		if(control_receiver_thread != null) {
+			try{
+				control_receiver_thread.interrupt();				
+			} catch (Exception e) {
+				// do nothing
+			}
+		}
+		if(backup_receiver_thread != null) {
+			try{
+				backup_receiver_thread.interrupt();				
+			} catch (Exception e) {
+				// do nothing
+			}
+		}
+		if(restore_receiver_thread != null) {
+			try{
+				restore_receiver_thread.interrupt();				
+			} catch (Exception e) {
+				// do nothing
+			}
+		}
+		if(command_receiver_thread != null) {
+			try{
+				command_receiver_thread.interrupt();				
+			} catch (Exception e) {
+				// do nothing
+			}
+		}
 		
 		try {
 			socket_control.dispose();
@@ -184,6 +206,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			e.printStackTrace();
 			logAndShowError("Unable to backup metadata.");
 		}
+
+		logAndShow("Backup Service terminated.");
 	}
 
 	@Override
@@ -226,6 +250,12 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 
 	@Override
 	public void handle(ResponseGetterThread sender, String response, Socket connection_socket) {
+		// FIXME remove after testing
+		if(response.equals("EXIT")) {
+			terminate();
+			return;
+		}
+		
 		if(sender == command_receiver_thread) {
 			logAndShow("COMMAND channel received \"" + response + "\".");			
 		} else {

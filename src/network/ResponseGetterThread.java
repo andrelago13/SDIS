@@ -90,7 +90,8 @@ public class ResponseGetterThread extends Thread {
 				try {
 					datagram_socket.receive(packet);
 				} catch (IOException e) {
-					e.printStackTrace();
+					//e.printStackTrace();
+					logger.logAndShow("UDP port listening interrupted.");
 					return;
 				}
 				
@@ -131,24 +132,29 @@ public class ResponseGetterThread extends Thread {
 				}				
 			} else {
 				while(enabled) {
-					Socket connectionSocket = tcp_socket.accept();
-					BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-					
-					String request = inFromClient.readLine();
-					
-					if(!enabled) {
-						connectionSocket.close();
-						break;
-					}
+					try {
+						Socket connectionSocket = tcp_socket.accept();
+						BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 
-					// Dispatches a new thread to avoid blocking upcoming messages
-					final ResponseGetterThread t = this;
-					new Thread( new Runnable() {
-					    @Override
-					    public void run() {
-							tcp_handler.handle(t, request, connectionSocket);
-					    }
-					}).start();
+						String request = inFromClient.readLine();
+
+						if(!enabled) {
+							connectionSocket.close();
+							break;
+						}
+
+						// Dispatches a new thread to avoid blocking upcoming messages
+						final ResponseGetterThread t = this;
+						new Thread( new Runnable() {
+							@Override
+							public void run() {
+								tcp_handler.handle(t, request, connectionSocket);
+							}
+						}).start();
+					} catch (Exception e) {
+						logger.logAndShow("TCP port " + tcp_socket.getLocalPort() + " listening interrupted.");
+						return;
+					}
 				}
 			}
 		} catch (IOException e) {
