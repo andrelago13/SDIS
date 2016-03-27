@@ -6,14 +6,16 @@ import java.util.ArrayList;
 @SuppressWarnings("serial")
 public class FileBackupInfo implements Serializable {
 
+	private String file_path = null;
 	private String hash = null;
 	private ArrayList<ChunkBackupInfo> chunks = null;
 	
-	public FileBackupInfo(String hash) {
-		this(hash, new ArrayList<ChunkBackupInfo>());
+	public FileBackupInfo(String path, String hash) {
+		this(path, hash, new ArrayList<ChunkBackupInfo>());
 	}
 	
-	public FileBackupInfo(String hash, ArrayList<ChunkBackupInfo> chunks) {
+	public FileBackupInfo(String path, String hash, ArrayList<ChunkBackupInfo> chunks) {
+		this.file_path = path;
 		this.hash = hash;
 		this.chunks = chunks;
 	}
@@ -56,7 +58,7 @@ public class FileBackupInfo implements Serializable {
 
 	public String toString() {
 		String result = "";
-		result += '\t' + "File: " + hash + '\n' + '\t' + "Chunks:" + '\n';
+		result += '\t' + "File: " + file_path + " [" + hash + "]" + '\n' + '\t' + "Chunks:" + '\n';
 		for(int i = 0; i < chunks.size(); ++i) {
 			result += chunks.get(i).toString() + '\n';
 		}

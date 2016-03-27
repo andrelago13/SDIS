@@ -64,15 +64,15 @@ public class MetadataManager implements Serializable {
 		return peer_files;
 	}
 
-	public void updateOwnFile(String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
-		updateFile(own_files, file_hash, chunk_num, chunk_min_replication, chunk_replication, chunk_size);
+	public void updateOwnFile(String file_path, String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
+		updateFile(own_files, file_path, file_hash, chunk_num, chunk_min_replication, chunk_replication, chunk_size);
 	}
 	
 	public void updatePeerFile(String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
-		updateFile(peer_files, file_hash, chunk_num, chunk_min_replication, chunk_replication, chunk_size);
+		updateFile(peer_files, null, file_hash, chunk_num, chunk_min_replication, chunk_replication, chunk_size);
 	}
 	
-	private void updateFile(ArrayList<FileBackupInfo> file_list, String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
+	private void updateFile(ArrayList<FileBackupInfo> file_list, String file_path, String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
 		for(int i = 0; i < file_list.size(); ++i) {
 			if(file_list.get(i).getHash().equals(file_hash)) {
 				file_list.get(i).updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
@@ -80,7 +80,7 @@ public class MetadataManager implements Serializable {
 			}
 		}
 		
-		FileBackupInfo file = new FileBackupInfo(file_hash);
+		FileBackupInfo file = new FileBackupInfo(file_path, file_hash);
 		file.updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
 		file_list.add(file);
 	}
