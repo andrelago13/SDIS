@@ -24,6 +24,10 @@ public class FileBackupInfo implements Serializable {
 		return hash;
 	}
 	
+	public String getFilePath() {
+		return file_path;
+	}
+	
 	public ArrayList<ChunkBackupInfo> getChunks() {
 		return chunks;
 	}

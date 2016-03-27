@@ -140,9 +140,8 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 		MetadataManager mg = service.getMetadata();
 
-		// TODO Falta incluir na metadata o nome do ficheiro. A comparação seguinte é feita entre o nome do ficheiro e o hash. Resolver.
 		for(int i = 0; i < mg.ownFilesInfo().size(); i++)
-			if(mg.ownFilesInfo().get(i).getHash().equals(filePath))
+			if(mg.ownFilesInfo().get(i).getFilePath().equals(filePath))
 				if(utils.Files.fileValid(filePath))
 					utils.Files.removeFile(filePath);
 		
@@ -155,7 +154,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 		
 		ArrayList<FileBackupInfo> peerFiles = mg.peerFilesInfo();
 		for(int i = 0; i < peerFiles.size(); i++)
-			if(peerFiles.get(i).getHash().equals(filePath))
+			if(peerFiles.get(i).getFilePath().equals(filePath))
 				removers.add(new ChunkRemove(service, peerFiles.get(i).getChunks().get(i), peerFiles.get(i).getHash()));
 		
 		active = true;
