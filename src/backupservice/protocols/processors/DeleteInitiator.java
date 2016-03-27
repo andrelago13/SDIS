@@ -2,31 +2,26 @@ package backupservice.protocols.processors;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import network.MulticastSocketWrapper;
 import network.SocketWrapper;
-import filesystem.FileChunk;
-import filesystem.FileManager;
-import filesystem.SplitFile;
+import filesystem.metadata.ChunkBackupInfo;
+import filesystem.metadata.FileBackupInfo;
 import filesystem.metadata.MetadataManager;
 import backupservice.BackupService;
 import backupservice.protocols.ProtocolHeader;
 import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
-import backupservice.protocols.processors.BackupInitiator.EndCondition;
 
 public class DeleteInitiator implements ProtocolProcessor {
 
 	public static enum EndConditionD {
-		SUCCESS,
 		MULTICAST_UNREACHABLE,
-		TCP_UNREACHABLE,
-		FILE_UNREACHABLE
+		CANNOT_DELETE_FILE
 	}
 
-	public static final String[] condition_codes = {"0", "-1", "-2", "-3"};
+	public static final String[] condition_codes = {"-1", "-2"};
 
 	private BackupService service = null;
 	private String filePath = null;
@@ -34,32 +29,100 @@ public class DeleteInitiator implements ProtocolProcessor {
 	private Socket responseSocket = null;
 	private Boolean active = false;
 
-	// TODO Acabar a classe ChunKRemove
-	private ArrayList<ChunKRemove> removers = null;
+	private ArrayList<ChunkRemove> removers = null;
 
-	private class ChunKRemove extends Thread {
-		private FileChunk chunk = null;
+	private class ChunkRemove extends Thread {
+		private ChunkBackupInfo chunk = null;
+		private String fileID = null;
 		private BackupService service = null;
 		private MulticastSocketWrapper outgoing_socket = null;
 		private int currentAttempt = 0;
 
 		private ArrayList<Integer> respondedPeers = null;
 
-		public ChunKRemove(BackupService service, FileChunk chunk) {
+		public ChunkRemove(BackupService service, ChunkBackupInfo chunk, String fileID) {
 			this.chunk = chunk;
 			this.service = service;
 			this.outgoing_socket = this.service.getBackupSocket();
 			this.respondedPeers = new ArrayList<Integer>();
+			this.fileID = fileID;
+		}
+		
+		private void removeChunk() {
+			service.logAndShow("Removing  chunk #" + chunk.getNum() + ", file " + fileID + ", attempt " + currentAttempt + ")");
+			ProtocolInstance instance = Protocols.deleteProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR, service.getIdentifier(), fileID);
+			
+			byte[] packet_bytes = instance.toBytes();
+			try {
+				outgoing_socket.send(packet_bytes, packet_bytes.length);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				try {
+					if(responseSocket != null)
+						SocketWrapper.sendTCP(responseSocket, condition_codes[EndConditionD.MULTICAST_UNREACHABLE.ordinal()]);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return;
+			}
+		}
+		
+		public void run() {
+			if(!active())
+				return;
+			
+			removeChunk();
+			service.getTimer().schedule( 
+			        new java.util.TimerTask() {
+			            @Override
+			            public void run() {
+			                eval();
+			            }
+			        }, 
+			        (long) (1000 * Math.pow(2, currentAttempt))
+			);
+		}
+		
+		private void eval() {
+			if(!active())
+				return;
+			
+			if(currentAttempt == 4) {
+				service.logAndShow("Ending remove chunk #" + chunk.getNum() + ", file " + fileID + ", attempt " + currentAttempt + ")");
+				terminate();
+			} else {
+					++currentAttempt;
+					run();					
+				}
+			}
+
+		public Boolean interested(ProtocolInstance message) {
+			if(message == null)
+				return false;
+			
+			ProtocolHeader header = message.getHeader();
+			if(header != null && header.getMessage_type() == Protocols.MessageType.REMOVED) {
+				String file_id = header.getFile_id();
+				int chunk_no = header.getChunk_no();
+				if(file_id != null && file_id.equals(fileID) && chunk_no == chunk.getNum()) {
+					return true;
+				}
+			}
+			
+			return false;
 		}
 
-		// TODO implementar run, eval, handle e interested
-		public Boolean interested(ProtocolInstance message) {	return false;	}
-
-		public void run() {}
-
-		private void eval() {  }
-
-		public void handle(ProtocolInstance message) {	}
+		public void handle(ProtocolInstance message) {
+			if(!active())
+				return;
+			
+			ProtocolHeader header = message.getHeader();
+			int peer_id = header.getSender_id();
+			if(!respondedPeers.contains(peer_id)) {
+				respondedPeers.add(peer_id);
+				// TODO Acabar handle
+			}
+		}
 	}
 
 	public DeleteInitiator(BackupService service, String filePath) {
@@ -77,12 +140,29 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 		MetadataManager mg = service.getMetadata();
 
+		// TODO Falta incluir na metadata o nome do ficheiro. A comparação seguinte é feita entre o nome do ficheiro e o hash. Resolver.
 		for(int i = 0; i < mg.ownFilesInfo().size(); i++)
 			if(mg.ownFilesInfo().get(i).getHash().equals(filePath))
 				if(utils.Files.fileValid(filePath))
 					utils.Files.removeFile(filePath);
-
-		// TODO Preencher a lista de peers que tem que remover 
+		
+		if(responseSocket != null)
+			try {
+				SocketWrapper.sendTCP(responseSocket, condition_codes[EndConditionD.CANNOT_DELETE_FILE.ordinal()]);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		
+		ArrayList<FileBackupInfo> peerFiles = mg.peerFilesInfo();
+		for(int i = 0; i < peerFiles.size(); i++)
+			if(peerFiles.get(i).getHash().equals(filePath))
+				removers.add(new ChunkRemove(service, peerFiles.get(i).getChunks().get(i), peerFiles.get(i).getHash()));
+		
+		active = true;
+		
+		for(int i = 0; i < removers.size(); ++i) {
+			removers.get(i).start();
+		}
 	}
 
 	@Override
@@ -92,7 +172,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 		for(int i = 0; i < removers.size(); ++i) {
 			if(removers.get(i).interested(message)) {
-				final ChunKRemove sender = removers.get(i);
+				final ChunkRemove sender = removers.get(i);
 				new Thread( new Runnable() {
 					@Override
 					public void run() {
@@ -102,7 +182,6 @@ public class DeleteInitiator implements ProtocolProcessor {
 				return true;
 			}
 		}
-
 		return false;
 	}
 
