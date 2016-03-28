@@ -1,10 +1,5 @@
 package backupservice.protocols.processors;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -43,12 +38,11 @@ public class DeletePeer implements ProtocolProcessor {
 
 		if(header.getMessage_type() == Protocols.MessageType.DELETE) {
 			if(header.getFile_id() == file_hash) {
-				service.log("Contents of file " + file_hash + " already deleted by peer. Terminating.");
+				service.log("File with " + file_hash + " already deleted by peer. Terminating.");
 				terminate();
 				return true;
 			}
 		}
-
 		return false;
 	}
 
