@@ -178,7 +178,6 @@ public class RestoreInitiator implements ProtocolProcessor {
 					return;
 				
 				makeCheck();
-				// TODO delayed task to verify if file was recovered
             }
 		}, DELAY_TIMER);
 	}

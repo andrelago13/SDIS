@@ -21,7 +21,9 @@ public abstract class ProtocolProcessorFactory {
 			}
 			break;
 		case GETCHUNK:
-			// TODO getchunk peer
+			if(header.getSender_id() != service.getIdentifier()) {
+				return new RestorePeer(service, header.getSender_id(), header.getFile_id(), header.getChunk_no());
+			}
 			break;
 		case DELETE:
 			// TODO delete peer
