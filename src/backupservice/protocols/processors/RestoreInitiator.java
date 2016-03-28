@@ -60,6 +60,10 @@ public class RestoreInitiator implements ProtocolProcessor {
 		}
 		
 		public void run() {
+			sendCommand();
+		}
+		
+		public void sendCommand() {
 			service.logAndShow("RESTORE chunk #" + chunk_no + ", file " + file_hash + ".");
 			try {
 				service.getControlSocket().send(reply.toString());
@@ -67,6 +71,7 @@ public class RestoreInitiator implements ProtocolProcessor {
 				e.printStackTrace();
 				service.logAndShowError("Unable to send GETCHUNK, CONTROL channel not reachable.");
 			}
+			
 		}
 		
 		private Boolean interested(ProtocolInstance message) {
@@ -94,12 +99,9 @@ public class RestoreInitiator implements ProtocolProcessor {
 			
 			notifyReception(chunk_no);
 		}
-
-		public void runAgain() {
-			if(got_chunk)
-				return;
-			
-			this.start();
+		
+		public Boolean gotChunk() {
+			return got_chunk;
 		}
 	}
 	
@@ -156,7 +158,8 @@ public class RestoreInitiator implements ProtocolProcessor {
 		
 		this.number_of_chunks = file_info.getChunks().size();
 		String file_hash = file_info.getHash();
-		
+
+		service.logAndShow("Restoring file \"" + file_path + "\" : attempt no. " + attempt + ".");
 		for(int i = 0; i < this.number_of_chunks; ++i) {
 			restorers.add(new ChunkRestorer(file_hash, i));
 			restorers.get(i).start();
@@ -193,8 +196,10 @@ public class RestoreInitiator implements ProtocolProcessor {
 			}
 			terminate();
 		} else {
+			service.logAndShow("Restoring file \"" + file_path + "\" : attempt no. " + attempt + ".");
 			for(int i = 0; i < restorers.size(); ++i) {
-				restorers.get(i).runAgain();
+				if(!restorers.get(i).gotChunk())
+					restorers.get(i).sendCommand();
 			}
 			initiateDelayedCheck();
 		}
