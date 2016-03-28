@@ -49,7 +49,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 		}
 
 		private void removeChunk() {
-			service.logAndShow("Removing  chunk #" + chunk.getNum() + ", file " + fileID + ", attempt " + currentAttempt + ")");
+			service.logAndShow("Removing file " + fileID + ", attempt " + currentAttempt + ")");
 			ProtocolInstance instance = Protocols.deleteProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR, service.getIdentifier(), fileID);
 
 			byte[] packet_bytes = instance.toBytes();
@@ -179,7 +179,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 		for(int j = 0; j < peerFiles.size(); j++)
 			if(peerFiles.get(j).getFilePath().equals(filePath))
-				removers.add(new ChunkRemove(service, peerFiles.get(j).getChunks().get(j), peerFiles.get(j).getFilePath()));
+				removers.add(new ChunkRemove(service, peerFiles.get(j).getChunks().get(j), peerFiles.get(j).getHash()));
 
 		if(removers.size() != 0)
 		{
