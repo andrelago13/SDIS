@@ -21,7 +21,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 		CANNOT_DELETE_FILE
 	}
 
-	public static final String[] condition_codes = {"-1", "-2"};
+	public static final String[] condition_codes = {"-5", "-6"};
 
 	private BackupService service = null;
 	private String filePath = null;
@@ -47,11 +47,11 @@ public class DeleteInitiator implements ProtocolProcessor {
 			this.respondedPeers = new ArrayList<Integer>();
 			this.fileID = fileID;
 		}
-		
+
 		private void removeChunk() {
 			service.logAndShow("Removing  chunk #" + chunk.getNum() + ", file " + fileID + ", attempt " + currentAttempt + ")");
 			ProtocolInstance instance = Protocols.deleteProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR, service.getIdentifier(), fileID);
-			
+
 			byte[] packet_bytes = instance.toBytes();
 			try {
 				outgoing_socket.send(packet_bytes, packet_bytes.length);
@@ -66,40 +66,40 @@ public class DeleteInitiator implements ProtocolProcessor {
 				return;
 			}
 		}
-		
+
 		public void run() {
 			if(!active())
 				return;
-			
+
 			removeChunk();
 			service.getTimer().schedule( 
-			        new java.util.TimerTask() {
-			            @Override
-			            public void run() {
-			                eval();
-			            }
-			        }, 
-			        (long) (1000 * Math.pow(2, currentAttempt))
-			);
+					new java.util.TimerTask() {
+						@Override
+						public void run() {
+							eval();
+						}
+					}, 
+					(long) (1000 * Math.pow(2, currentAttempt))
+					);
 		}
-		
+
 		private void eval() {
 			if(!active())
 				return;
-			
+
 			if(currentAttempt == 4) {
 				service.logAndShow("Ending remove chunk #" + chunk.getNum() + ", file " + fileID + ", attempt " + currentAttempt + ")");
 				terminate();
 			} else {
-					++currentAttempt;
-					run();					
-				}
+				++currentAttempt;
+				run();					
 			}
+		}
 
 		public Boolean interested(ProtocolInstance message) {
 			if(message == null)
 				return false;
-			
+
 			ProtocolHeader header = message.getHeader();
 			if(header != null && header.getMessage_type() == Protocols.MessageType.REMOVED) {
 				String file_id = header.getFile_id();
@@ -108,19 +108,22 @@ public class DeleteInitiator implements ProtocolProcessor {
 					return true;
 				}
 			}
-			
+
 			return false;
 		}
 
 		public void handle(ProtocolInstance message) {
 			if(!active())
 				return;
-			
+
 			ProtocolHeader header = message.getHeader();
 			int peer_id = header.getSender_id();
 			if(!respondedPeers.contains(peer_id)) {
 				respondedPeers.add(peer_id);
-				// TODO Acabar handle
+				for(int i = 0; i < service.getMetadata().peerFilesInfo().size(); i++)
+					if(service.getMetadata().peerFilesInfo().get(i).getFilePath().equals(filePath))
+						for(int j = 0; j < service.getMetadata().peerFilesInfo().get(i).getChunks().size();j++)
+							service.getMetadata().peerFilesInfo().get(i).getChunks().remove(j);
 			}
 		}
 	}
@@ -144,21 +147,21 @@ public class DeleteInitiator implements ProtocolProcessor {
 			if(mg.ownFilesInfo().get(i).getFilePath().equals(filePath))
 				if(utils.Files.fileValid(filePath))
 					utils.Files.removeFile(filePath);
-		
+
 		if(responseSocket != null)
 			try {
 				SocketWrapper.sendTCP(responseSocket, condition_codes[EndConditionD.CANNOT_DELETE_FILE.ordinal()]);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		
+
 		ArrayList<FileBackupInfo> peerFiles = mg.peerFilesInfo();
 		for(int i = 0; i < peerFiles.size(); i++)
 			if(peerFiles.get(i).getFilePath().equals(filePath))
-				removers.add(new ChunkRemove(service, peerFiles.get(i).getChunks().get(i), peerFiles.get(i).getHash()));
-		
+				removers.add(new ChunkRemove(service, peerFiles.get(i).getChunks().get(i), peerFiles.get(i).getFilePath()));
+
 		active = true;
-		
+
 		for(int i = 0; i < removers.size(); ++i) {
 			removers.get(i).start();
 		}
