@@ -20,7 +20,8 @@ public class ReclaimInitiator implements ProtocolProcessor {
 	public static enum EndCondition {
 		SUCCESS,
 		MULTICAST_UNREACHABLE,
-		UNABLE_TO_DELETE_CHUNK
+		UNABLE_TO_DELETE_CHUNK,
+		NO_CHUNK_FOUND_TO_REMOVE
 	}
 	
 	private BackupService service;
@@ -58,18 +59,28 @@ public class ReclaimInitiator implements ProtocolProcessor {
 	public void initiate() {
 		service.logAndShow("Initiating RECLAIM to ensure max of " + max_bytes + " Bytes.");
 		active = true;
-		Boolean successful = false;
+		Boolean successful = true;
 		
 		while(metadata.getBackupSize() > max_bytes) {
 			successful = false;
 			ChunkBackupInfo chunk = metadata.bestChunkToRemove();
-			if(chunk == null)
+			if(chunk == null) {
+				service.logAndShowError("Unable to find chunk to remove at RECLAIM protocol.");
+				if(response_socket != null) {
+					try {
+						SocketWrapper.sendTCP(response_socket, "" + EndCondition.NO_CHUNK_FOUND_TO_REMOVE.ordinal());
+					} catch (IOException e1) {
+						service.logAndShowError("Unable to notify TCP command caller.");
+					}
+				}
 				break;
+			}
 
 			try {
 				notifyRemoval(chunk);
 			} catch (Exception e) {
 				e.printStackTrace();
+				service.logAndShowError("Unable to notify peers of chunk space RECLAIM.");
 				if(response_socket != null) {
 					try {
 						SocketWrapper.sendTCP(response_socket, "" + EndCondition.MULTICAST_UNREACHABLE.ordinal());
@@ -83,6 +94,7 @@ public class ReclaimInitiator implements ProtocolProcessor {
 				removeChunk(chunk);
 			} catch (Exception e) {
 				e.printStackTrace();
+				service.logAndShowError("Unable to remove chunk for space RECLAIM.");
 				if(response_socket != null) {
 					try {
 						SocketWrapper.sendTCP(response_socket, "" + EndCondition.UNABLE_TO_DELETE_CHUNK.ordinal());
@@ -99,6 +111,13 @@ public class ReclaimInitiator implements ProtocolProcessor {
 		
 		if(successful) {
 			service.logAndShow("Terminating RECLAIM. Reclaimed " + bytes_reclaimed + " bytes. Current total: " + metadata.getBackupSize() + " Bytes.");
+			if(response_socket != null) {
+				try {
+					SocketWrapper.sendTCP(response_socket, "" + EndCondition.SUCCESS.ordinal());
+				} catch (IOException e1) {
+					service.logAndShowError("Unable to notify TCP command caller.");
+				}
+			}
 		} else {
 			service.logAndShow("Terminating unsuccessful RECLAIM. Reclaimed " + bytes_reclaimed + " bytes. Current total: " + metadata.getBackupSize() + "/" + max_bytes + " Bytes.");
 		}

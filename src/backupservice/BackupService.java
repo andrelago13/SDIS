@@ -148,7 +148,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		logAndShow("BACKUP channel started at " + socket_backup.getGroup().getHostAddress() + ":" + socket_backup.getLocalPort());
 		logAndShow("RESTORE channel started at " + socket_restore.getGroup().getHostAddress() + ":" + socket_restore.getLocalPort());
 
-		logAndShow("Backup Service initialized");
+		logAndShow("Backup Service initialized (" + metadata.getBackupSize() + " Bytes taken).");
 	}
 
 	public void terminate() {

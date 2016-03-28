@@ -52,8 +52,7 @@ public abstract class ProtocolProcessorFactory {
 		case DELETE:
 			return new DeleteInitiator(service, tcp_message.filePath(), response_socket);
 		case RECLAIM:
-			// TODO reclaim initiator
-			break;
+			return new ReclaimInitiator(service, tcp_message.maxDiskSpace(), response_socket);
 		}
 		
 		return null;
