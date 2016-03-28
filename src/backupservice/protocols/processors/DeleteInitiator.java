@@ -108,7 +108,6 @@ public class DeleteInitiator implements ProtocolProcessor {
 					return true;
 				}
 			}
-
 			return false;
 		}
 
@@ -143,14 +142,21 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 		MetadataManager mg = service.getMetadata();
 
-		int i = 0;
-		for(; i < mg.ownFilesInfo().size(); i++)
-			if(mg.ownFilesInfo().get(i).getFilePath().equals(filePath))
-				if(utils.Files.fileValid(filePath))
-					utils.Files.removeFile(filePath);
-		
-		if(i == mg.ownFilesInfo().size())
-			service.logAndShow("File provided by filePath doesn't exist!");
+		if(mg.ownFilesInfo().size() == 0)
+		{
+			service.logAndShow("OwnFiles is empty!");
+		}
+		else
+		{
+			int i = 0;
+			for(; i < mg.ownFilesInfo().size(); i++)
+				if(mg.ownFilesInfo().get(i).getFilePath().equals(filePath))
+					if(utils.Files.fileValid(filePath))
+						utils.Files.removeFile(filePath);
+
+			if(i == mg.ownFilesInfo().size())
+				service.logAndShow("File provided by filePath doesn't exist!");
+		}
 
 		if(responseSocket != null)
 			try {
