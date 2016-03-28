@@ -101,7 +101,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 				return false;
 
 			ProtocolHeader header = message.getHeader();
-			if(header != null && header.getMessage_type() == Protocols.MessageType.REMOVED) {
+			if(header != null && header.getMessage_type() == Protocols.MessageType.DELETE) {
 				String file_id = header.getFile_id();
 				int chunk_no = header.getChunk_no();
 				if(file_id != null && file_id.equals(fileID) && chunk_no == chunk.getNum()) {
