@@ -50,10 +50,11 @@ public class RestorePeer implements ProtocolProcessor {
 			if(header.getFile_id() == file_hash && header.getChunk_no() == chunk_no) {
 				service.log("Contents of chunk #" + chunk_no + " of file " + file_hash + "requested by peer " + sender_id + " already sent by another peer. Terminating.");
 				terminate();
+				return true;
 			}
 		}
 
-		return null;
+		return false;
 	}
 
 	@Override
@@ -76,7 +77,7 @@ public class RestorePeer implements ProtocolProcessor {
 			chunk_content = Files.readAllBytes(path_obj);
 			
 			instance = Protocols.chunkProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR,
-					sender_id, file_hash, chunk_no, chunk_content);
+					service.getIdentifier(), file_hash, chunk_no, chunk_content);
 		} catch (IOException e) {
 			e.printStackTrace();
 			service.logAndShowError("Unable to retrieve contents of chunk #" + chunk_no + " of file " + file_hash + "requested by peer " + sender_id + ". Terminating.");

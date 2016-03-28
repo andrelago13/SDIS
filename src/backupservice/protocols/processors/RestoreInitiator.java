@@ -235,7 +235,8 @@ public class RestoreInitiator implements ProtocolProcessor {
 				PrintWriter out_writer = new PrintWriter(new BufferedWriter(new FileWriter(file_path,false)));
 				
 				for(int i = 0; i < received_chunks.size(); ++i) {
-					out_writer.print(received_chunks.get(i).toString());
+					byte[] content = received_chunks.get(i).getchunkContent();
+					out_writer.print(new String(content, 0, content.length));
 				}
 				out_writer.close();
 			} catch (IOException e) {
