@@ -29,8 +29,9 @@ public abstract class ProtocolProcessorFactory {
 			// TODO delete peer
 			break;
 		case REMOVED:
-			// TODO removed peer
-			break;
+			if(header.getSender_id() != service.getIdentifier()) {
+				return new ReclaimPeer(service, header.getFile_id(), header.getChunk_no());
+			}
 		default:
 			break;
 		}
