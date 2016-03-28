@@ -16,10 +16,10 @@ public class FileManager
 	@Deprecated 
 	public static SplitFile splitFile(String filename, int replicationNum, int chunkSize) throws IOException, NoSuchAlgorithmException
 	{
-		String fileIdHashed = utils.Hash.hashFile(filename, 0, replicationNum);
+		File file = new File(filename);
+		String fileIdHashed = utils.Hash.hashFile(filename, 0, replicationNum, file);
 		SplitFile splitFile = new SplitFile(fileIdHashed);
 		
-		File file = new File(filename);
 		
 		FileInputStream readStream = new FileInputStream(file);
 		BufferedReader br = new BufferedReader(new InputStreamReader(readStream));
@@ -56,10 +56,11 @@ public class FileManager
 	
 	public static SplitFile splitFile(String filename, int owner, int replicationNum, int chunkSize) throws IOException, NoSuchAlgorithmException
 	{
-		String fileIdHashed = utils.Hash.hashFile(filename, owner, replicationNum);
+
+		File file = new File(filename);
+		String fileIdHashed = utils.Hash.hashFile(filename, owner, replicationNum, file);
 		SplitFile splitFile = new SplitFile(fileIdHashed);
 		
-		File file = new File(filename);
 		
 		FileInputStream readStream = new FileInputStream(file);
 		BufferedReader br = new BufferedReader(new InputStreamReader(readStream));
