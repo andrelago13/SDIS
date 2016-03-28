@@ -104,4 +104,16 @@ public class FileBackupInfo implements Serializable {
 			}
 		}
 	}
+
+	public Boolean decreaseChunkReplication(int chunk_num) {
+		for(int i = 0; i < chunks.size(); ++i) {
+			ChunkBackupInfo chunk = chunks.get(i);
+			if(chunk.getNum() == chunk_num) {
+				chunk.setActualReplication(chunk.getActualReplication() - 1);
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }

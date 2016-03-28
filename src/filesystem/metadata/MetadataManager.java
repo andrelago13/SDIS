@@ -201,4 +201,17 @@ public class MetadataManager implements Serializable {
 			}
 		}
 	}
+
+	/*
+	 * returns true if chunk existed
+	 */
+	public Boolean decreasePeerChunkReplication(String file_hash, int chunk_num) {
+		for(int i = 0; i < peer_files.size(); ++i) {
+			if(peer_files.get(i).getHash().equals(file_hash)) {
+				return peer_files.get(i).decreaseChunkReplication(chunk_num);
+			}
+		}
+		
+		return false;
+	}
 }
