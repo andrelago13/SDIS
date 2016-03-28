@@ -21,7 +21,9 @@ public abstract class ProtocolProcessorFactory {
 			}
 			break;
 		case GETCHUNK:
-			// TODO getchunk peer
+			if(header.getSender_id() != service.getIdentifier()) {
+				return new RestorePeer(service, header.getSender_id(), header.getFile_id(), header.getChunk_no());
+			}
 			break;
 		case DELETE:
 			// TODO delete peer
@@ -46,7 +48,7 @@ public abstract class ProtocolProcessorFactory {
 		case BACKUP:
 			return new BackupInitiator(service, tcp_message.filePath(), tcp_message.replicationDegree(), response_socket);
 		case RESTORE:
-			// TODO restore initiator
+			return new RestoreInitiator(service, tcp_message.filePath(), response_socket);
 		case DELETE:
 			return new DeleteInitiator(service, tcp_message.filePath(), response_socket);
 		case RECLAIM:
