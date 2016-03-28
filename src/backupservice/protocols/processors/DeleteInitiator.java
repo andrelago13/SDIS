@@ -135,6 +135,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 		this.service = service;
 		this.filePath = filePath;
 		this.responseSocket = response_socket;
+		this.removers = new ArrayList<ChunkRemove>();
 	}	
 
 	@Override
@@ -143,8 +144,8 @@ public class DeleteInitiator implements ProtocolProcessor {
 		MetadataManager mg = service.getMetadata();
 
 		// Testou-se com um ficheiro já criado
-		//mg.ownFilesInfo().add(new FileBackupInfo("resources/test_read.txt", "12345"));
-		
+		//	mg.ownFilesInfo().add(new FileBackupInfo("resources/test_read.txt", "12345"));
+
 		if(mg.ownFilesInfo().size() == 0)
 		{
 			service.logAndShow("OwnFiles is empty!");
@@ -173,16 +174,21 @@ public class DeleteInitiator implements ProtocolProcessor {
 				e.printStackTrace();
 			}
 
-		/*ArrayList<FileBackupInfo> peerFiles = mg.peerFilesInfo();
+		ArrayList<FileBackupInfo> peerFiles = mg.peerFilesInfo();
+		//		peerFiles.add(new FileBackupInfo("resources/test_join", "12945"));
+
 		for(int j = 0; j < peerFiles.size(); j++)
 			if(peerFiles.get(j).getFilePath().equals(filePath))
 				removers.add(new ChunkRemove(service, peerFiles.get(j).getChunks().get(j), peerFiles.get(j).getFilePath()));
 
-		active = true;
+		if(removers.size() != 0)
+		{
+			active = true;
 
-		for(int l = 0; l < removers.size(); l++) {
-			removers.get(l).start();
-		}*/
+			for(int l = 0; l < removers.size(); l++) {
+				removers.get(l).start();
+			}
+		}
 	}
 
 	@Override
