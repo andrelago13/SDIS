@@ -142,6 +142,9 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 		MetadataManager mg = service.getMetadata();
 
+		// Testou-se com um ficheiro já criado
+		//mg.ownFilesInfo().add(new FileBackupInfo("resources/test_read.txt", "12345"));
+		
 		if(mg.ownFilesInfo().size() == 0)
 		{
 			service.logAndShow("OwnFiles is empty!");
@@ -151,8 +154,13 @@ public class DeleteInitiator implements ProtocolProcessor {
 			int i = 0;
 			for(; i < mg.ownFilesInfo().size(); i++)
 				if(mg.ownFilesInfo().get(i).getFilePath().equals(filePath))
+				{
 					if(utils.Files.fileValid(filePath))
+					{
 						utils.Files.removeFile(filePath);
+						break;
+					}
+				}
 
 			if(i == mg.ownFilesInfo().size())
 				service.logAndShow("File provided by filePath doesn't exist!");
@@ -165,7 +173,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 				e.printStackTrace();
 			}
 
-		ArrayList<FileBackupInfo> peerFiles = mg.peerFilesInfo();
+		/*ArrayList<FileBackupInfo> peerFiles = mg.peerFilesInfo();
 		for(int j = 0; j < peerFiles.size(); j++)
 			if(peerFiles.get(j).getFilePath().equals(filePath))
 				removers.add(new ChunkRemove(service, peerFiles.get(j).getChunks().get(j), peerFiles.get(j).getFilePath()));
@@ -174,7 +182,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 		for(int l = 0; l < removers.size(); l++) {
 			removers.get(l).start();
-		}
+		}*/
 	}
 
 	@Override

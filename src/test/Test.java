@@ -1,5 +1,6 @@
 package test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
@@ -76,7 +77,7 @@ public class Test {
 		
 		// Teste para aceder a elementos enum com base em indice
 		
-		System.out.println(EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf("1"))]);		
+		System.out.println(EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf("1"))]);	
 	}
 
 }
