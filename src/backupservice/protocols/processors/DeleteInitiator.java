@@ -143,10 +143,14 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 		MetadataManager mg = service.getMetadata();
 
-		for(int i = 0; i < mg.ownFilesInfo().size(); i++)
+		int i = 0;
+		for(; i < mg.ownFilesInfo().size(); i++)
 			if(mg.ownFilesInfo().get(i).getFilePath().equals(filePath))
 				if(utils.Files.fileValid(filePath))
 					utils.Files.removeFile(filePath);
+		
+		if(i == mg.ownFilesInfo().size())
+			service.logAndShow("File provided by filePath doesn't exist!");
 
 		if(responseSocket != null)
 			try {
@@ -156,14 +160,14 @@ public class DeleteInitiator implements ProtocolProcessor {
 			}
 
 		ArrayList<FileBackupInfo> peerFiles = mg.peerFilesInfo();
-		for(int i = 0; i < peerFiles.size(); i++)
-			if(peerFiles.get(i).getFilePath().equals(filePath))
-				removers.add(new ChunkRemove(service, peerFiles.get(i).getChunks().get(i), peerFiles.get(i).getFilePath()));
+		for(int j = 0; j < peerFiles.size(); j++)
+			if(peerFiles.get(j).getFilePath().equals(filePath))
+				removers.add(new ChunkRemove(service, peerFiles.get(j).getChunks().get(j), peerFiles.get(j).getFilePath()));
 
 		active = true;
 
-		for(int i = 0; i < removers.size(); ++i) {
-			removers.get(i).start();
+		for(int l = 0; l < removers.size(); l++) {
+			removers.get(l).start();
 		}
 	}
 

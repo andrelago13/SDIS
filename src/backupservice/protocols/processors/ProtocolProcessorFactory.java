@@ -46,8 +46,7 @@ public abstract class ProtocolProcessorFactory {
 		case BACKUP:
 			return new BackupInitiator(service, tcp_message.filePath(), tcp_message.replicationDegree(), response_socket);
 		case RESTORE:
-			// TODO restore initiator
-			break;
+			return new DeleteInitiator(service, tcp_message.filePath(), response_socket);
 		case DELETE:
 			// TODO delete initiator
 			break;
