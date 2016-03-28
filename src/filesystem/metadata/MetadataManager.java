@@ -104,4 +104,25 @@ public class MetadataManager implements Serializable {
 		
 		return result;
 	}
+
+	public FileBackupInfo ownFileBackupInfo_hash(String file_hash) {
+		for(int i = 0; i < own_files.size(); ++i) {
+			FileBackupInfo info = own_files.get(i);
+			if(info.getHash() != null && info.getHash().equals(file_hash)) {
+				return info;
+			}
+		}
+		return null;
+	}
+
+	public FileBackupInfo ownFileBackupInfo_path(String file_path) {
+		for(int i = 0; i < own_files.size(); ++i) {
+			FileBackupInfo info = own_files.get(i);
+			if(info.getFilePath() != null && info.getFilePath().equals(file_path)) {
+				return info;
+			}
+		}
+		return null;
+	}
+	
 }
