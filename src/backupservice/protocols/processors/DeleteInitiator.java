@@ -20,7 +20,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 		MULTICAST_UNREACHABLE,
 		CANNOT_DELETE_FILE
 	}
-
+ 
 	public static final String[] condition_codes = {"-5", "-6"};
 
 	private BackupService service = null;
