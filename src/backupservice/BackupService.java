@@ -244,8 +244,10 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			return;
 		}
 		
-		if(response_instance.getHeader().getSender_id() == identifier)
+		if(response_instance.getHeader().getSender_id() == identifier) {
+			logAndShow("Own message received, ignoring...");
 			return;
+		}
 		
 		for(int i = 0; i < processors.size(); ++i) {
 			if(processors.get(i).handle(response_instance)) {
