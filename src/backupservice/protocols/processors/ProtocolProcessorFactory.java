@@ -29,8 +29,9 @@ public abstract class ProtocolProcessorFactory {
 			// TODO delete peer
 			break;
 		case REMOVED:
-			// TODO removed peer
-			break;
+			if(header.getSender_id() != service.getIdentifier()) {
+				return new ReclaimPeer(service, header.getFile_id(), header.getChunk_no());
+			}
 		default:
 			break;
 		}
@@ -52,8 +53,7 @@ public abstract class ProtocolProcessorFactory {
 		case DELETE:
 			return new DeleteInitiator(service, tcp_message.filePath(), response_socket);
 		case RECLAIM:
-			// TODO reclaim initiator
-			break;
+			return new ReclaimInitiator(service, tcp_message.maxDiskSpace(), response_socket);
 		}
 		
 		return null;

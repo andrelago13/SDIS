@@ -52,12 +52,13 @@ public class FileBackupInfo implements Serializable {
 				chunk.setActualReplication(replication);
 				chunk.setMinReplication(min_replication);
 				chunk.setSize(size);
+				chunk.setFile(this);
 				
 				return;
 			}
 		}
 		
-		chunks.add(new ChunkBackupInfo(chunk_num, size, min_replication, replication));
+		chunks.add(new ChunkBackupInfo(chunk_num, size, min_replication, replication, this));
 	}
 
 	public String toString() {
@@ -69,4 +70,50 @@ public class FileBackupInfo implements Serializable {
 		return result;
 	}
 
+	public int totalSize() {
+		int total_size = 0;
+		
+		for(int i = 0; i < chunks.size(); ++i) {
+			total_size += chunks.get(i).getSize();
+		}
+		
+		return total_size;
+	}
+
+	public ChunkBackupInfo bestChunkToRemove() {
+		ChunkBackupInfo best_chunk = null;
+		
+		for(int i = 0; i < chunks.size(); ++i) {
+			ChunkBackupInfo chunk = chunks.get(i);
+			if(chunk != null) {
+				if((best_chunk == null) || ((best_chunk.getActualReplication() - best_chunk.getMinReplication()) > (chunk.getActualReplication() - chunk.getMinReplication()))) {
+					best_chunk = chunk;
+				}
+			}
+		}
+		
+		return best_chunk;
+	}
+
+	public void removeChunk(ChunkBackupInfo chunk) {
+		for(int i = 0; i < chunks.size(); ++i) {
+			ChunkBackupInfo chunk_t = chunks.get(i);
+			if(chunk_t.getNum() == chunk.getNum()) {
+				chunks.remove(i);
+				return;
+			}
+		}
+	}
+
+	public Boolean decreaseChunkReplication(int chunk_num) {
+		for(int i = 0; i < chunks.size(); ++i) {
+			ChunkBackupInfo chunk = chunks.get(i);
+			if(chunk.getNum() == chunk_num) {
+				chunk.setActualReplication(chunk.getActualReplication() - 1);
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }

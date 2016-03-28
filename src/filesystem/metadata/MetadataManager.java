@@ -147,4 +147,71 @@ public class MetadataManager implements Serializable {
 		
 		return null;
 	}
+
+	public int getBackupSize() {
+		int total_size = 0;
+		
+		for(int i = 0; i < peer_files.size(); ++i) {
+			total_size += peer_files.get(i).totalSize();
+		}
+		
+		return total_size;
+	}
+
+	public ChunkBackupInfo bestChunkToRemove() {
+		ChunkBackupInfo best_chunk = null;
+		
+		for(int i = 0; i < peer_files.size(); ++i) {
+			ChunkBackupInfo chunk = peer_files.get(i).bestChunkToRemove();
+			if(chunk != null) {
+				if((best_chunk == null) || ((chunk.getActualReplication() - chunk.getMinReplication()) > (best_chunk.getActualReplication() - best_chunk.getMinReplication()))) {
+					best_chunk = chunk;
+				}
+			}
+		}
+		
+		return best_chunk;
+	}
+	
+	public ChunkBackupInfo bestChunkToRemove(ArrayList<ChunkBackupInfo> invalid_chunks) {
+		ChunkBackupInfo best_chunk = null;
+		
+		for(int i = 0; i < peer_files.size(); ++i) {
+			ChunkBackupInfo chunk = peer_files.get(i).bestChunkToRemove();
+			if(chunk != null) {
+				if((best_chunk == null) || ((chunk.getActualReplication() - chunk.getMinReplication()) > (best_chunk.getActualReplication() - best_chunk.getMinReplication()))) {
+					if(invalid_chunks == null || !invalid_chunks.contains(chunk))
+						best_chunk = chunk;
+				}
+			}
+		}
+		
+		return best_chunk;		
+	}
+
+	public void removeChunk(ChunkBackupInfo chunk) {
+		for(int i = 0; i < peer_files.size(); ++i) {
+			FileBackupInfo file = peer_files.get(i);
+			if(file.getHash().equals(chunk.getFileHash())) {
+				file.removeChunk(chunk);
+				if(file.getChunks().size() == 0) {
+					peer_files.remove(i);
+				}
+				return;
+			}
+		}
+	}
+
+	/*
+	 * returns true if chunk existed
+	 */
+	public Boolean decreasePeerChunkReplication(String file_hash, int chunk_num) {
+		for(int i = 0; i < peer_files.size(); ++i) {
+			if(peer_files.get(i).getHash().equals(file_hash)) {
+				return peer_files.get(i).decreaseChunkReplication(chunk_num);
+			}
+		}
+		
+		return false;
+	}
 }

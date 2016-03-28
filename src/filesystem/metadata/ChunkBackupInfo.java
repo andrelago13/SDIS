@@ -9,12 +9,18 @@ public class ChunkBackupInfo implements Serializable {
 	private int actual_replication = -1;
 	private int min_replication = -1;
 	private int size = -1;
+	private FileBackupInfo file;
 	
 	public ChunkBackupInfo(int num, int size, int min_replication, int actual_replication) {
+		this(num, size, min_replication, actual_replication, null);
+	}
+	
+	public ChunkBackupInfo(int num, int size, int min_replication, int actual_replication, FileBackupInfo file) {
 		this.num = num;
 		this.size = size;
 		this.min_replication = min_replication;
 		this.actual_replication = actual_replication;
+		this.file = file;
 	}
 
 	public int getNum() {
@@ -53,4 +59,18 @@ public class ChunkBackupInfo implements Serializable {
 		return "" + '\t' + '\t' + "Chunk #" + num + " size:" + size + " min_replication:" + min_replication + " replication:" + actual_replication;
 	}
 	
+	public FileBackupInfo getFile() {
+		return file;
+	}
+	
+	public String getFileHash() {
+		if(file == null)
+			return null;
+		
+		return file.getHash();
+	}
+	
+	public void setFile(FileBackupInfo file) {
+		this.file = file;
+	}
 }
