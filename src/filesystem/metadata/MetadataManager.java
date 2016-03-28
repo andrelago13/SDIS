@@ -125,4 +125,26 @@ public class MetadataManager implements Serializable {
 		return null;
 	}
 	
+	public FileBackupInfo peerFileBackupInfo(String file_hash) {
+		for(int i = 0; i < peer_files.size(); ++i) {
+			if(peer_files.get(i).getHash().equals(file_hash))
+				return peer_files.get(i);
+		}
+		return null;
+	}
+	
+	public ChunkBackupInfo peerChunkBackupInfo(String file_hash, int chunk_no) {
+		FileBackupInfo file = peerFileBackupInfo(file_hash);
+		if(file == null)
+			return null;
+		
+		ArrayList<ChunkBackupInfo> chunks = file.getChunks();
+		
+		for(int i = 0; i < chunks.size(); ++i) {
+			if(chunks.get(i).getNum() == chunk_no)
+				return chunks.get(i);
+		}
+		
+		return null;
+	}
 }
