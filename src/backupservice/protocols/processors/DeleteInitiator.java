@@ -63,6 +63,8 @@ public class DeleteInitiator implements ProtocolProcessor {
 			
 			if(responseSocket != null) {
 				try {
+					// FIXME se esta exceção for lançada não é porque o ficheiro não foi backed up (vê o fixme da função deleteFile) mas sim porque não
+					// conseguiste escrever no multicast. Tens de mudar o EndCondition aqui
 					SocketWrapper.sendTCP(responseSocket, "" + EndCondition.FILE_WAS_NOT_BACKED_UP.ordinal());
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -98,7 +100,12 @@ public class DeleteInitiator implements ProtocolProcessor {
 		if(!active)
 			return;
 		
+		// FIXME o objetivo é enviar 3 DELETE com 2 segundos de intervalo. Tu envias um DELETE na chamada a notifyDelete mas não voltas a chamar essa função.
+		// o eval também vai ter de enviar o delete porque o eval é que é chamado a cada 2 segundos
+		
 		if(currentAttempt == 2) {
+			// FIXME se atingires a tentativa 2 não significa que não conseguiste fazer DELETE, significa que conseguiste e que
+			// já acabaste, logo tens de mudar a resposta que mandas para o tcp
 			service.logAndShow("Removing file with" + filePath + ", attempt " + currentAttempt + ")");
 			if(responseSocket != null) {
 				try {
@@ -111,6 +118,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 			terminate();
 		}
 		else {
+			// FIXME provavelmente aqui é que envias o notifyDelete
 			++currentAttempt;
 			startDelete();					
 		}
@@ -143,6 +151,12 @@ public class DeleteInitiator implements ProtocolProcessor {
 				}
 				else
 					service.logAndShow("File provided by filePath doesn't exist!");
+		
+
+		// FIXME não devias ter um else neste if e não devias ter um retorno na função?
+		// repara que, se alguma destas exceções for lançada é porque não conseguiste apagar o ficheiro, logo também não vais enviar o delete. Se isto
+		// acontecer terminas, mostras uma mensagem no ecrã e respondes ao tcp
+		// para além disso, se o mg.ownFileBackupInfo_path(pathFile) for null, é porque o chunk nunca foi backed up, logo tmb não fazes o delete
 					
 	}
 }
