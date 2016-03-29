@@ -34,6 +34,19 @@ public class MetadataManager implements Serializable {
 		}
 	}
 
+	public String toFileFormat() {
+		String result = "" + own_files.size() + " " + peer_files.size() + '\n';
+		
+		for(int i = 0; i < own_files.size(); ++i) {
+			result += own_files.get(i).toFileFormat() + '\n';
+		}
+		result += "============" + '\n';
+		for(int i = 0; i < peer_files.size(); ++i) {
+			result += peer_files.get(i).toFileFormat() + '\n';
+		}
+		
+		return result;
+	}
 	
 	public MetadataManager(int id) {
 		this.id = id;
@@ -75,6 +88,7 @@ public class MetadataManager implements Serializable {
 	private void updateFile(ArrayList<FileBackupInfo> file_list, String file_path, String file_hash, int chunk_num, int chunk_min_replication, int chunk_replication, int chunk_size) {
 		for(int i = 0; i < file_list.size(); ++i) {
 			if(file_list.get(i).getHash().equals(file_hash)) {
+				file_list.get(i).setPath(file_path);
 				file_list.get(i).updateChunk(chunk_num, chunk_size, chunk_min_replication, chunk_replication);
 				return;
 			}

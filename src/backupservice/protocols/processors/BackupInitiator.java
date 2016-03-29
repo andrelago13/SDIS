@@ -196,21 +196,22 @@ public class BackupInitiator implements ProtocolProcessor {
 		
 		try {
 			split_file = FileManager.splitFile(file_path, service.getIdentifier() ,replication_deg, Protocols.MAX_PACKET_LENGTH);
-		} catch (IOException e) {
-			e.printStackTrace();
-			try {
-				if(response_socket != null)
-					SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.FILE_NOT_REACHABLE.ordinal()]);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			terminate();
-			return;
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			try {
 				if(response_socket != null)
 					SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.HASH_FAILURE.ordinal()]);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			terminate();
+			return;
+		} catch (IOException e) {
+			// TODO mensagens
+			e.printStackTrace();
+			try {
+				if(response_socket != null)
+					SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.FILE_NOT_REACHABLE.ordinal()]);
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}

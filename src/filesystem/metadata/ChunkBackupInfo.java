@@ -73,4 +73,8 @@ public class ChunkBackupInfo implements Serializable {
 	public void setFile(FileBackupInfo file) {
 		this.file = file;
 	}
+
+	public String toFileFormat() {		
+		return "      " + num + " " + actual_replication + " " + min_replication + " " + size;
+	}
 }

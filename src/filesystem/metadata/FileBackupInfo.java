@@ -53,12 +53,12 @@ public class FileBackupInfo implements Serializable {
 				chunk.setMinReplication(min_replication);
 				chunk.setSize(size);
 				chunk.setFile(this);
-				
 				return;
 			}
 		}
 		
-		chunks.add(new ChunkBackupInfo(chunk_num, size, min_replication, replication, this));
+		ChunkBackupInfo c = new ChunkBackupInfo(chunk_num, size, min_replication, replication, this);
+		chunks.add(c);
 	}
 
 	public String toString() {
@@ -115,5 +115,34 @@ public class FileBackupInfo implements Serializable {
 		}
 		
 		return false;
+	}
+
+	public String toFileFormat() {
+		String result = "";
+		
+		if(file_path == null)
+			result += '\n';
+		else
+			result += file_path + '\n';
+		
+		if(hash == null)
+			result += '\n';
+		else
+			result += hash + '\n';
+		
+		result += "" + chunks.size() + '\n';
+		
+		for(int i = 0; i < chunks.size(); ++i) {
+			result += chunks.get(i).toFileFormat();
+			if(i < chunks.size()-1) {
+				result += '\n';
+			}
+		}
+			
+		return result;
+	}
+
+	public void setPath(String file_path) {
+		this.file_path = file_path;
 	}
 }
