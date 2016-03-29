@@ -3,6 +3,7 @@ package backupservice.protocols.processors;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Random;
 
 import network.MulticastSocketWrapper;
 import network.SocketWrapper;
@@ -13,7 +14,7 @@ import backupservice.BackupService;
 import backupservice.protocols.ProtocolHeader;
 import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
-import backupservice.protocols.processors.RestoreInitiator.EndCondition;
+import backupservice.protocols.processors.BackupInitiator.EndCondition;
 
 public class DeleteInitiator implements ProtocolProcessor {
 
@@ -28,9 +29,8 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 	private Socket responseSocket = null;
 	private Boolean active = false;
-	private Boolean present = false;
-
-	private int current_attempt = 0;
+	
+	private int currentAttempt = 0;
 	
 	public DeleteInitiator(BackupService service, String filePath) {
 		this(service, filePath, null);
@@ -70,16 +70,49 @@ public class DeleteInitiator implements ProtocolProcessor {
 				}
 			}
 		}
-		terminate();
+		startDelete();
 	}
 	
 	public void notifyDelete(MetadataManager mg) throws IOException
 	{
-		if(present)
-		{
 			ProtocolInstance instance = Protocols.deleteProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR,
 					service.getIdentifier(), mg.ownFileBackupInfo_path(filePath).getHash());
 				service.getControlSocket().send(instance.toString());
+	}
+	
+
+	private void startDelete() {
+
+		service.getTimer().schedule( 
+				new java.util.TimerTask() {
+					@Override
+					public void run() {
+						eval();
+					}
+				}, 
+		        (long) (2000)
+			);
+	}
+
+	public void eval() {
+		if(!active)
+			return;
+		
+		if(currentAttempt == 2) {
+			service.logAndShow("Removing file with" + filePath + ", attempt " + currentAttempt + ")");
+			if(responseSocket != null) {
+				try {
+					SocketWrapper.sendTCP(responseSocket, ""+ EndCondition.CANNOT_DELETE_FILE.ordinal());
+				} catch (IOException e) {
+					e.printStackTrace();
+					service.logAndShowError("Unable to confirm conditional success to TCP client.");
+				}
+			}
+			terminate();
+		}
+		else {
+			++currentAttempt;
+			startDelete();					
 		}
 	}
 
@@ -102,7 +135,6 @@ public class DeleteInitiator implements ProtocolProcessor {
 		if(mg.ownFileBackupInfo_path(pathFile) != null)
 				if(utils.Files.fileValid(pathFile))
 				{
-					present = true;
 					// Remove file
 					utils.Files.removeFile(pathFile);
 					// Remove file from metadata
