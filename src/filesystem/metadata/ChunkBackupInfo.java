@@ -75,6 +75,6 @@ public class ChunkBackupInfo implements Serializable {
 	}
 
 	public String toFileFormat() {		
-		return "      " + num + " " + actual_replication + " " + min_replication + " " + size;
+		return "" + num + " " + actual_replication + " " + min_replication + " " + size;
 	}
 }
