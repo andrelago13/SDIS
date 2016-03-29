@@ -162,7 +162,6 @@ public class BackupPeer implements ProtocolProcessor {
 	}
 	
 	private void storeChunk() throws IOException {
-		// TODO guardar só se houver espaço
 		File f = new File(getChunkPath());
 		f.getParentFile().mkdirs(); 
 		f.delete();
