@@ -13,7 +13,7 @@ public abstract class ProtocolProcessorFactory {
 	public static ProtocolProcessor getProcessor(ProtocolInstance message, BackupService service) {
 		
 		ProtocolHeader header = message.getHeader();
-		
+		 
 		switch(header.getMessage_type()) {
 		case PUTCHUNK:
 			if(header.getSender_id() != service.getIdentifier()) {
@@ -26,8 +26,7 @@ public abstract class ProtocolProcessorFactory {
 			}
 			break;
 		case DELETE:
-			if(header.getSender_id() != service.getIdentifier())
-			{
+			if(header.getSender_id() != service.getIdentifier()) {
 				return new DeletePeer(service, header.getFile_id());
 			}
 			break;

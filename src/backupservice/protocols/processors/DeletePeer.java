@@ -13,16 +13,11 @@ import backupservice.protocols.Protocols;
 
 public class DeletePeer implements ProtocolProcessor {
 
-	public final static int MAX_DELAY = 400;
-
 	private String file_hash;
 
 	private BackupService service;
 
 	private Boolean active = false;
-	
-	private Random random;
-	private int delay;
 
 	public DeletePeer(BackupService service, String file_hash) {
 		this.service = service;
@@ -31,18 +26,6 @@ public class DeletePeer implements ProtocolProcessor {
 
 	@Override
 	public Boolean handle(ProtocolInstance message) {
-		if(!active)
-			return false;
-
-		ProtocolHeader header = message.getHeader();
-
-		if(header.getMessage_type() == Protocols.MessageType.DELETE) {
-			if(header.getFile_id() == file_hash) {
-				service.log("File with " + file_hash + " already deleted by peer. Terminating.");
-				terminate();
-				return true;
-			}
-		}
 		return false;
 	}
 
@@ -54,7 +37,14 @@ public class DeletePeer implements ProtocolProcessor {
 	@Override
 	public void initiate() {
 
-		MetadataManager mg = service.getMetadata();
+		// TODO ver se ficheiro existe na metadata
+		// TODO 	se não existir, terminas c/mensagem no log
+		// TODO 	se existir
+		// TODO			vês na metadata quais os chunks que tens
+		// TODO			vais ao path BackupService.BACKUP_FILE_PATH/ID_DESTE_PEER/HASH_NUM
+		// TODO 		apagar ficheiros e metadata
+		
+		/*MetadataManager mg = service.getMetadata();
 		FileBackupInfo peerFile =  mg.peerFileBackupInfo(file_hash);
 
 		if(peerFile == null) {
@@ -80,32 +70,8 @@ public class DeletePeer implements ProtocolProcessor {
 			active = true;
 			startDelayedResponse();
 
-		}
+		}*/
 	}
-	
-	private void generateDelay() {
-		delay = random.nextInt(MAX_DELAY);
-	}
-
-	private void startDelayedResponse() {
-		generateDelay();
-
-		service.getTimer().schedule( 
-				new java.util.TimerTask() {
-					@Override
-					public void run() {
-						eval();
-					}
-				}, 
-				delay
-			);
-	}
-	
-	public void eval() {
-		if(!active)
-			return;
-	}
-
 
 	@Override
 	public void terminate() {
