@@ -8,6 +8,8 @@ import javax.xml.bind.DatatypeConverter;
 
 public class Hash {
 	
+	// TODO cena da hash com data de modificação ou sistema
+	
 	public static String hashFile (String filename, int owner, int replicationLevel) throws NoSuchAlgorithmException, UnsupportedEncodingException
 	{
 		String fileID = filename + ":" + Integer.toString(owner) + ":" + System.currentTimeMillis() + ":" + Integer.toString(replicationLevel);
