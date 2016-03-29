@@ -1,8 +1,10 @@
 package filesystem.metadata;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -46,6 +48,19 @@ public class MetadataManager implements Serializable {
 		}
 		
 		return result;
+	}
+
+	public Boolean fromFile() {
+		try (BufferedReader br = new BufferedReader(new FileReader(getFullPath()))) {
+		    String line;
+		    while ((line = br.readLine()) != null) {
+		       // TODO acabar
+		    }
+		} catch (Exception e) {
+			return false;
+		}
+		
+		return true;
 	}
 	
 	public MetadataManager(int id) {
