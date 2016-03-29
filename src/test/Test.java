@@ -67,9 +67,10 @@ public class Test {
 		// Teste ao hash do nome de um ficheiro assumindo o owner como 0
 		
 		String filename = "teste";
+		File file = new File(filename);
 		String filenameHashed = "";
 		try {
-			filenameHashed = utils.Hash.hashFile(filename, 0, 2);
+			filenameHashed = utils.Hash.hashFile(filename, 0, 2, file);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
@@ -78,6 +79,15 @@ public class Test {
 		// Teste para aceder a elementos enum com base em indice
 		
 		System.out.println(EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf("1"))]);	
+		
+		
+		// Teste para aceder á ultima data de modificação
+		
+		File file2 = new File("resources/teste.txt");
+		file.getParentFile().mkdirs(); 
+		file.createNewFile();
+		
+		System.out.println("Before Format : " + file2.lastModified());
 	}
 
 }
