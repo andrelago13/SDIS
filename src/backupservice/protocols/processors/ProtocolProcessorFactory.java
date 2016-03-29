@@ -26,7 +26,10 @@ public abstract class ProtocolProcessorFactory {
 			}
 			break;
 		case DELETE:
-			// TODO delete peer
+			if(header.getSender_id() != service.getIdentifier())
+			{
+				return new DeletePeer(service, header.getFile_id());
+			}
 			break;
 		case REMOVED:
 			if(header.getSender_id() != service.getIdentifier()) {
