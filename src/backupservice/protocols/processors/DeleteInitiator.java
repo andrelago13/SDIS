@@ -14,7 +14,6 @@ import backupservice.BackupService;
 import backupservice.protocols.ProtocolHeader;
 import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
-import backupservice.protocols.processors.BackupInitiator.EndCondition;
 
 public class DeleteInitiator implements ProtocolProcessor {
 

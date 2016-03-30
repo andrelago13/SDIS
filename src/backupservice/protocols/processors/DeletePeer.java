@@ -18,6 +18,8 @@ public class DeletePeer implements ProtocolProcessor {
 	private BackupService service;
 
 	private Boolean active = false;
+	
+	MetadataManager mg;
 
 	public DeletePeer(BackupService service, String file_hash) {
 		this.service = service;
@@ -37,46 +39,52 @@ public class DeletePeer implements ProtocolProcessor {
 	@Override
 	public void initiate() {
 
-		// TODO ver se ficheiro existe na metadata
-		// TODO 	se não existir, terminas c/mensagem no log
-		// TODO 	se existir
-		// TODO			vês na metadata quais os chunks que tens
-		// TODO			vais ao path BackupService.BACKUP_FILE_PATH/ID_DESTE_PEER/HASH_NUM
-		// TODO 		apagar ficheiros e metadata
-		
-		/*MetadataManager mg = service.getMetadata();
-		FileBackupInfo peerFile =  mg.peerFileBackupInfo(file_hash);
+		service.logAndShow("Starting DeleteInitiator...");
 
-		if(peerFile == null) {
-			service.logAndShow("File with " + file_hash + "requested by peer is not present. Terminating.");
-			terminate();
-		}
+		mg = service.getMetadata();
+		
+		FileBackupInfo peerFile =  mg.peerFileBackupInfo(file_hash);
+		checkpeerFile(peerFile);
 
 		ArrayList<ChunkBackupInfo> chunks = peerFile.getChunks();
-
-		for(int i = 0; i < chunks.size(); i++)
-		{
-			String path = BackupService.BACKUP_FILE_PATH + service.getIdentifier() + "/" + file_hash + "_" + chunks.get(i).getNum();
-			
-			if(utils.Files.fileValid(path))
-				utils.Files.removeFile(path);
-			else
-			{
-				service.logAndShowError("Unable to delete chunk #" + chunks.get(i).getNum() + " of file " + file_hash + "requested by peer. Terminating.");
-				terminate();
-				return;
-			}
-
-			active = true;
-			startDelayedResponse();
-
-		}*/
+		eraseChuncksFromFile(chunks);
+		
+		terminate();
 	}
 
 	@Override
 	public void terminate() {
 		active = false;
 		service.removeProcessor(this);
+	}
+	
+	public void checkpeerFile(FileBackupInfo p)
+	{
+		if(p == null) {
+			service.logAndShow("File with " + file_hash + "requested by peer is not present. Terminating.");
+			terminate();
+		}
+	}
+	
+	public void eraseChuncksFromFile(ArrayList<ChunkBackupInfo> chunks)
+	{
+		for(int i = 0; i < chunks.size(); i++)
+		{
+			String path = BackupService.BACKUP_FILE_PATH + service.getIdentifier() + "/" + file_hash + "_" + chunks.get(i).getNum();
+			
+			if(utils.Files.fileValid(path))
+			{
+				utils.Files.removeFile(path);
+				mg.peerFilesInfo().remove(mg.peerChunkBackupInfo(file_hash, chunks.get(i).getNum()));
+			}
+			else
+			{
+				service.logAndShowError("Unable to delete chunk #" + chunks.get(i).getNum() + " of file " + file_hash + "requested by peer. Terminating.");
+				terminate();
+				return;
+			}
+			active = true;
+		}
 	}
 
 }
