@@ -2,16 +2,10 @@ package backupservice.protocols.processors;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Random;
 
-import network.MulticastSocketWrapper;
 import network.SocketWrapper;
-import filesystem.metadata.ChunkBackupInfo;
-import filesystem.metadata.FileBackupInfo;
 import filesystem.metadata.MetadataManager;
 import backupservice.BackupService;
-import backupservice.protocols.ProtocolHeader;
 import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
 
@@ -64,17 +58,22 @@ public class DeleteInitiator implements ProtocolProcessor {
 				}
 			}
 			terminate();
+			return;
 		}
 
-		if(responseSocket != null) {
-			try {
-				SocketWrapper.sendTCP(responseSocket, "" + EndCondition.MULTICAST_UNREACHABLE.ordinal());
-			} catch (IOException e) {
-				e.printStackTrace();
-				service.logAndShowError("Unable to notify initiator of DELETE protocol");
+		try {
+			notifyDelete(mg);
+		} catch (IOException e) {
+			e.printStackTrace();
+			if(responseSocket != null) {
+				try {
+					SocketWrapper.sendTCP(responseSocket, "" + EndCondition.MULTICAST_UNREACHABLE.ordinal());
+				} catch (IOException e2) {
+					e2.printStackTrace();
+					service.logAndShowError("Unable to notify initiator of DELETE protocol");
+				}
 			}
 		}
-
 		startDelete();
 	}
 
@@ -120,6 +119,14 @@ public class DeleteInitiator implements ProtocolProcessor {
 				notifyDelete(mg);
 			} catch (IOException e) {
 				e.printStackTrace();
+				if(responseSocket != null) {
+					try {
+						SocketWrapper.sendTCP(responseSocket, "" + EndCondition.MULTICAST_UNREACHABLE.ordinal());
+					} catch (IOException e2) {
+						e2.printStackTrace();
+						service.logAndShowError("Unable to notify initiator of DELETE protocol");
+					}
+				}
 			}
 			++currentAttempt;
 			startDelete();					

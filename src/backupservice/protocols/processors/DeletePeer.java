@@ -1,15 +1,12 @@
 package backupservice.protocols.processors;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import filesystem.metadata.ChunkBackupInfo;
 import filesystem.metadata.FileBackupInfo;
 import filesystem.metadata.MetadataManager;
 import backupservice.BackupService;
-import backupservice.protocols.ProtocolHeader;
 import backupservice.protocols.ProtocolInstance;
-import backupservice.protocols.Protocols;
 
 public class DeletePeer implements ProtocolProcessor {
 
@@ -44,12 +41,13 @@ public class DeletePeer implements ProtocolProcessor {
 		mg = service.getMetadata();
 		
 		FileBackupInfo peerFile =  mg.peerFileBackupInfo(file_hash);
-		checkpeerFile(peerFile);
-
-		ArrayList<ChunkBackupInfo> chunks = peerFile.getChunks();
-		eraseChuncksFromFile(chunks);
 		
-		terminate();
+		if(checkpeerFile(peerFile)) {
+			ArrayList<ChunkBackupInfo> chunks = peerFile.getChunks();
+			eraseChuncksFromFile(chunks);
+			
+			terminate();
+		}
 	}
 
 	@Override
@@ -58,12 +56,14 @@ public class DeletePeer implements ProtocolProcessor {
 		service.removeProcessor(this);
 	}
 	
-	public void checkpeerFile(FileBackupInfo p)
+	public Boolean checkpeerFile(FileBackupInfo p)
 	{
 		if(p == null) {
 			service.logAndShow("File with " + file_hash + "requested by peer is not present. Terminating.");
 			terminate();
+			return false;
 		}
+		return true;
 	}
 	
 	public void eraseChuncksFromFile(ArrayList<ChunkBackupInfo> chunks)
