@@ -25,7 +25,7 @@ import network.TCPResponseHandler;
 
 public class BackupService implements ResponseHandler, TCPResponseHandler, LoggerInterface {
 	
-	private final static int START_SOCKET_NO = 8080;
+	private final static int START_SOCKET_NO = 45824;
 	
 	public static final String BACKUP_FILE_PATH = "resources/backups/";
 	
