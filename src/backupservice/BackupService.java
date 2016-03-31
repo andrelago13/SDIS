@@ -352,4 +352,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		}		
 	}
 
+	public void setVersion(int major, int minor) {
+		Protocols.setCurrentVersion(major, minor);
+	}
 }

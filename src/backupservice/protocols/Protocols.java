@@ -14,6 +14,9 @@ public class Protocols {
 	
 	public static final int PROTOCOL_VERSION_MAJOR = 1;
 	public static final int PROTOCOL_VERSION_MINOR = 0;
+	
+	private static int currentVersionMajor = PROTOCOL_VERSION_MAJOR;
+	private static int currentVersionMinor = PROTOCOL_VERSION_MINOR;
 
 
 	// <MessageType> <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF>
@@ -167,4 +170,16 @@ public class Protocols {
 		return "" + PROTOCOL_VERSION_MAJOR + "." + PROTOCOL_VERSION_MINOR;
 	}
 	
+	public static void setCurrentVersion(int major, int minor) {
+		currentVersionMajor = major;
+		currentVersionMinor = minor;
+	}
+	
+	public static int versionMajor() {
+		return currentVersionMajor;
+	}
+	
+	public static int versionMinor() {
+		return currentVersionMinor;
+	}
 }
