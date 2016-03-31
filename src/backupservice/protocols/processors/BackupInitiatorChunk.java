@@ -45,7 +45,7 @@ public class BackupInitiatorChunk implements ProtocolProcessor {
 		
 		private void sendChunk() {
 			service.logAndShow("Backing up chunk #" + chunk.getchunkNum() + ", file " + file_hash + " (rep deg desired " + this.replication_deg + ", attempt " + current_attempt + ")");
-			ProtocolInstance instance = Protocols.putChunkProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR, 
+			ProtocolInstance instance = Protocols.putChunkProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(), 
 					service.getIdentifier(), this.file_hash, chunk.getchunkNum(), replication_deg, chunk.getchunkContent());
 			
 			byte[] packet_bytes = instance.toBytes();

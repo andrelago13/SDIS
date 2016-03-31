@@ -55,7 +55,7 @@ public class RestoreInitiator implements ProtocolProcessor {
 		public ChunkRestorer(String file_hash, int chunk_no) {
 			this.file_hash = file_hash;
 			this.chunk_no = chunk_no;
-			reply = Protocols.getchunkProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR,
+			reply = Protocols.getchunkProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
 					service.getIdentifier(), file_hash, chunk_no);
 		}
 		

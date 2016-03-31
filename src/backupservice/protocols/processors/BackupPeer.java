@@ -74,7 +74,7 @@ public class BackupPeer implements ProtocolProcessor {
 	}
 
 	public ProtocolInstance generateProtocolInstance() {
-		reply = Protocols.storedProtocolInstance(Protocols.PROTOCOL_VERSION_MAJOR, Protocols.PROTOCOL_VERSION_MINOR, service.getIdentifier(), file_id, chunk_no);
+		reply = Protocols.storedProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(), service.getIdentifier(), file_id, chunk_no);
 		return reply;
 	}
 	

@@ -167,7 +167,7 @@ public class Protocols {
 	}
 	
 	public static String currentVersion() {
-		return "" + PROTOCOL_VERSION_MAJOR + "." + PROTOCOL_VERSION_MINOR;
+		return "" + currentVersionMajor + "." + currentVersionMinor;
 	}
 	
 	public static void setCurrentVersion(int major, int minor) {
@@ -182,4 +182,5 @@ public class Protocols {
 	public static int versionMinor() {
 		return currentVersionMinor;
 	}
+
 }

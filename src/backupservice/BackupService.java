@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Timer;
@@ -18,12 +19,16 @@ import backupservice.protocols.Protocols;
 import backupservice.protocols.processors.ProtocolProcessor;
 import backupservice.protocols.processors.ProtocolProcessorFactory;
 import network.Communicator;
+import network.DatagramSocketWrapper;
 import network.MulticastSocketWrapper;
 import network.ResponseGetterThread;
 import network.ResponseHandler;
 import network.TCPResponseHandler;
 
 public class BackupService implements ResponseHandler, TCPResponseHandler, LoggerInterface {
+	
+	public final static int CURRENT_VERSION_MAJOR = 2;
+	public final static int CURRENT_VERSION_MINOR = 3;
 	
 	private final static int START_SOCKET_NO = 45824;
 	
@@ -38,16 +43,22 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	private MulticastSocketWrapper socket_backup = null;
 	private MulticastSocketWrapper socket_restore = null;
 	private ServerSocket own_socket = null;
+	private DatagramSocketWrapper private_data_socket = null;
 	
 	private ResponseGetterThread control_receiver_thread = null;
 	private ResponseGetterThread backup_receiver_thread = null;
 	private ResponseGetterThread restore_receiver_thread = null;
 	private ResponseGetterThread command_receiver_thread = null;
 	private Timer timer = null;
+	private ResponseGetterThread private_data_receiver_thread = null;
 	
 	private ArrayList<ProtocolProcessor> processors = null;
 	
 	public BackupService(int identifier, InetAddress control_address, int control_port, InetAddress backup_address, int backup_port, InetAddress restore_address, int restore_port) throws IllegalArgumentException, IOException {
+		this(identifier, control_address, control_port, backup_address, backup_port, restore_address, restore_port, true);
+	}
+	
+	public BackupService(int identifier, InetAddress control_address, int control_port, InetAddress backup_address, int backup_port, InetAddress restore_address, int restore_port, Boolean latest_version) throws IllegalArgumentException, IOException {
 		if(control_address == null || backup_address == null || restore_address == null || identifier < 0 || restore_port < 0) {
 			throw new IllegalArgumentException("Invalid argument values.");
 		}
@@ -58,14 +69,18 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		socket_backup = Communicator.getMulticastSocket(backup_address, backup_port);
 		socket_restore = Communicator.getMulticastSocket(restore_address, restore_port);
 		
-		initiateOwnSocket();
-		processors = new ArrayList<ProtocolProcessor>();
-		initiateMetadata();
-		initiateLogger();
-		initiateTimer();
+		if(latest_version) {
+			setVersion(CURRENT_VERSION_MAJOR, CURRENT_VERSION_MINOR);
+		}
+		
+		auxConstructor();
 	}
 	
 	public BackupService(int identifier, String control_address, int control_port, String backup_address, int backup_port, String restore_address, int restore_port) throws IllegalArgumentException, IOException {
+		this(identifier, control_address, control_port, backup_address, backup_port, restore_address, restore_port, true);
+	}
+	
+	public BackupService(int identifier, String control_address, int control_port, String backup_address, int backup_port, String restore_address, int restore_port, Boolean latest_version) throws IllegalArgumentException, IOException {
 		if(control_address == null || backup_address == null || restore_address == null || identifier < 0 || restore_port < 0) {
 			throw new IllegalArgumentException("Invalid argument values.");
 		}
@@ -76,11 +91,29 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		socket_backup = Communicator.getMulticastSocket(backup_address, backup_port);
 		socket_restore = Communicator.getMulticastSocket(restore_address, restore_port);
 		
+		if(latest_version) {
+			setVersion(CURRENT_VERSION_MAJOR, CURRENT_VERSION_MINOR);
+		}
+		
+		auxConstructor();
+	}
+	
+	private void auxConstructor() throws IOException {
+		
 		initiateOwnSocket();
 		processors = new ArrayList<ProtocolProcessor>();
 		initiateMetadata();
 		initiateLogger();
 		initiateTimer();
+		
+		if(lastVersionActive()) {
+			initiatePrivateDataSocket();
+		}
+		
+	}
+	
+	private void initiatePrivateDataSocket() throws SocketException {
+		private_data_socket = new DatagramSocketWrapper(START_SOCKET_NO + identifier);
 	}
 	
 	private void initiateLogger() {
@@ -132,12 +165,18 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		backup_receiver_thread = socket_backup.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH);
 		restore_receiver_thread = socket_restore.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH);
 		command_receiver_thread = new ResponseGetterThread(this, this, own_socket, false);
+		if(lastVersionActive()) {
+			private_data_receiver_thread = private_data_socket.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH);
+		}
 		
 		// START RUNNING THREADS
 		control_receiver_thread.start();
 		backup_receiver_thread.start();
 		restore_receiver_thread.start();
 		command_receiver_thread.start();
+		if(lastVersionActive()) {
+			private_data_receiver_thread.start();
+		}
 		
 		try {
 			logAndShow("Listening for commands at " + InetAddress.getLocalHost().getHostAddress() + ":" + own_socket.getLocalPort());
@@ -147,6 +186,13 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		logAndShow("CONTROL channel started at " + socket_control.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
 		logAndShow("BACKUP channel started at " + socket_backup.getGroup().getHostAddress() + ":" + socket_backup.getLocalPort());
 		logAndShow("RESTORE channel started at " + socket_restore.getGroup().getHostAddress() + ":" + socket_restore.getLocalPort());
+		if(lastVersionActive()) {
+			try {
+				logAndShow("Private data channel started at " + InetAddress.getLocalHost().getHostAddress() + ":" + private_data_socket.getLocalPort());
+			} catch (UnknownHostException e) {
+				logAndShow("Private data channel started at localhost:" + private_data_socket.getLocalPort());
+			}			
+		}
 
 		logAndShow("Backup Service initialized (" + metadata.getBackupSize() + " Bytes taken).");
 	}
@@ -354,5 +400,9 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 
 	public void setVersion(int major, int minor) {
 		Protocols.setCurrentVersion(major, minor);
+	}
+
+	public static Boolean lastVersionActive() {
+		return Protocols.versionMajor() == CURRENT_VERSION_MAJOR && Protocols.versionMinor() == CURRENT_VERSION_MINOR;
 	}
 }
