@@ -79,6 +79,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 	public void notifyDelete(MetadataManager mg) throws IOException
 	{
+		service.show("File Hash to be deleted: " + mg.ownFileBackupInfo_path(filePath).getHash());
 		ProtocolInstance instance = Protocols.deleteProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
 				service.getIdentifier(), mg.ownFileBackupInfo_path(filePath).getHash());
 		service.sendControlSocket(instance.toString());
