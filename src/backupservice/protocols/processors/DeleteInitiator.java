@@ -12,10 +12,10 @@ import backupservice.protocols.Protocols;
 public class DeleteInitiator implements ProtocolProcessor {
 
 	public static enum EndCondition {
+		SUCCESS,
 		MULTICAST_UNREACHABLE,
 		CANNOT_DELETE_FILE,
-		FILE_WAS_NOT_BACKED_UP,
-		SUCCESS
+		FILE_WAS_NOT_BACKED_UP
 	}
 
 	private BackupService service = null;

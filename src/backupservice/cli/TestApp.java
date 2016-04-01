@@ -5,16 +5,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Arrays;
-
-
 
 import backupservice.BackupService;
 import backupservice.protocols.processors.BackupInitiator;
-import backupservice.protocols.processors.BackupInitiator.EndCondition;
+import backupservice.protocols.processors.DeleteInitiator;
+import backupservice.protocols.processors.ReclaimInitiator;
+import backupservice.protocols.processors.RestoreInitiator;
 
 public class TestApp {
-	
+
 	private static BackupService service;
 	public static String LocalIp;
 	public static int LocalPort;
@@ -79,31 +78,79 @@ public class TestApp {
 					+ "exit:\n Press:EXIT\n\n");
 			break;
 		}
-		
-		output.println(request);
-		service.logAndShow("Request sent -> " + request);
-		
-		String resp = "";
-		try {
-			resp = input.readLine();
-		} catch (IOException e) {
-			service.logAndShowError("Cannot read resp from BufferedReader input!!");
-			e.printStackTrace();
+ 
+		if(!request.equals(""))
+		{
+			output.println(request);
+			service.logAndShow("Request sent -> " + request);
+
+			String resp = "";
+			try {
+				resp = input.readLine();
+			} catch (IOException e) {
+				service.logAndShowError("Cannot read resp from BufferedReader input!!");
+				e.printStackTrace();
+			}
+			service.logAndShow("Response received -> " + resp);
+
+			if(!resp.equals(""))
+			{
+				int pos = Integer.parseInt("resp");
+				switch(command)
+				{
+				case "BACKUP":
+					if(resp.equals("0"))
+						service.logAndShow("Command successful!");
+					else if(resp.equals("1"))
+						service.logAndShow("Command partially successful! Not enough replication");
+					else if(resp.equals("2"))
+						service.logAndShow("Command unsuccessful (error: " + BackupInitiator.EndCondition.values()[pos] + ")");
+					else if(resp.equals("3"))
+						service.logAndShow("Command unsuccessful (error: " + BackupInitiator.EndCondition.values()[pos] + ")");
+					else if(resp.equals("4"))
+						service.logAndShow("Command unsuccessful (error: " + BackupInitiator.EndCondition.values()[pos] + ")");
+					else if(resp.equals("5"))
+						service.logAndShow("Command unsuccessful (error: " + BackupInitiator.EndCondition.values()[pos] + ")");
+					break;
+				case "RESTORE":
+					if(resp.equals("0"))
+						service.logAndShow("Command successful!");
+					else if(resp.equals("1"))
+						service.logAndShow("Command unsuccessful (error: " + RestoreInitiator.EndCondition.values()[pos] + ")");
+					else if(resp.equals("2"))
+						service.logAndShow("Command unsuccessful (error: " + RestoreInitiator.EndCondition.values()[pos] + ")");
+					else if(resp.equals("3"))
+						service.logAndShow("Command unsuccessful (error: " + RestoreInitiator.EndCondition.values()[pos] + ")");
+					else if(resp.equals("4"))
+						service.logAndShow("Command unsuccessful (error: " + RestoreInitiator.EndCondition.values()[pos] + ")");
+					break;
+				case "RECLAIM":
+					if(resp.equals("0"))
+						service.logAndShow("Command successful!");
+					else if(resp.equals("1"))
+						service.logAndShow("Command unsuccessful (error: " + ReclaimInitiator.EndCondition.values()[pos] + ")");
+					else if(resp.equals("2"))
+						service.logAndShow("Command unsuccessful (error: " + ReclaimInitiator.EndCondition.values()[pos] + ")");
+					else if(resp.equals("3"))
+						service.logAndShow("Command unsuccessful (error: " + ReclaimInitiator.EndCondition.values()[pos] + ")");
+					break;
+				case "DELETE":
+					if(resp.equals("0"))
+						service.logAndShow("Command successful!");
+					else if(resp.equals("1"))
+						service.logAndShow("Command unsuccessful (error: " + DeleteInitiator.EndCondition.values()[pos] + ")");
+					else if(resp.equals("2"))
+						service.logAndShow("Command unsuccessful (error: " + DeleteInitiator.EndCondition.values()[pos] + ")");
+					else if(resp.equals("3"))
+						service.logAndShow("Command unsuccessful (error: " + DeleteInitiator.EndCondition.values()[pos] + ")");
+					break;
+				}
+			}
+			else
+				service.logAndShow("Didn't receive any response from server!");
 		}
-		service.logAndShow("Response received -> " + resp);
-		
-		if(resp.equals("0"))
-			service.logAndShow("Command successful!");
-		else if(resp.equals("1"))
-			service.logAndShow("Command partially successful!");
-		else if(resp.equals("-1"))
-			service.logAndShow("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
-		else if(resp.equals("-2"))
-			service.logAndShow("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
-		else if(resp.equals("-3"))
-			service.logAndShow("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
-		else if(resp.equals("-4"))
-			service.logAndShow("Command unsuccessful (error: " + EndCondition.values()[(Arrays.asList(BackupInitiator.condition_codes).indexOf(resp))] + ")");
+		else
+			service.show("You didn't select any operating command!");
 
 		output.close();
 		try {
@@ -118,7 +165,7 @@ public class TestApp {
 			service.logAndShowError("Cannot close socket!!");
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	public static String checkCommand (String[] args, String[] inputInfo)
