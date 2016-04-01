@@ -30,8 +30,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	public final static int CURRENT_VERSION_MAJOR = 2;
 	public final static int CURRENT_VERSION_MINOR = 3;
 	
-	private final static int START_SOCKET_NO = 40000;
-	private final static int START_SOCKET_NO_PRIVATE_DATA = 42000;
+	public final static int START_SOCKET_NO = 40000;
+	public final static int START_SOCKET_NO_PRIVATE_DATA = 42000;
 	
 	public static final String BACKUP_FILE_PATH = "resources/backups/";
 	
@@ -165,9 +165,9 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		control_receiver_thread = socket_control.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
 		backup_receiver_thread = socket_backup.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
 		restore_receiver_thread = socket_restore.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
-		command_receiver_thread = new ResponseGetterThread(this, this, own_socket, false);
+		command_receiver_thread = new ResponseGetterThread(this, this, own_socket, false, true);
 		if(lastVersionActive()) {
-			private_data_receiver_thread = new ResponseGetterThread(this, this, private_data_socket, false);
+			private_data_receiver_thread = new ResponseGetterThread(this, this, private_data_socket, false, true);
 		}
 		
 		// START RUNNING THREADS
@@ -231,6 +231,13 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 				// do nothing
 			}
 		}
+		if(private_data_receiver_thread != null) {
+			try{
+				private_data_receiver_thread.interrupt();				
+			} catch (Exception e) {
+				// do nothing
+			}
+		}
 		
 		try {
 			socket_control.dispose();
@@ -256,6 +263,14 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			e.printStackTrace();
 			logAndShowError("Unable to dispose of COMMAND channel socket.");
 		}
+		if(private_data_socket != null) {
+			try {
+				private_data_socket.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+				logAndShowError("Unable to dispose of COMMAND channel socket.");
+			}
+		}	
 		
 		System.out.println(processors.size());
 		for(int i = 0; i < processors.size(); ++i) {
@@ -284,35 +299,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			logAndShow("Unknown UDP channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");			
 		}
 		
-		Boolean handled = false;
-		ProtocolInstance response_instance = Protocols.parseMessage(new String(response.getData(), 0, response.getLength()));
-		if(response_instance == null) {
-			logAndShow("Message received was not a valid Protocol message.");
-			return;
-		}
-		
-		if(response_instance.getHeader().getSender_id() == identifier) {
-			logAndShow("Own message received, ignoring...");
-			return;
-		}
-		
-		for(int i = 0; i < processors.size(); ++i) {
-			if(processors.get(i).handle(response_instance)) {
-				handled = true;
-				logAndShow("Message received was handled by existing processor.");
-				break;
-			}
-		}
-		if(!handled) {
-			ProtocolProcessor processor = ProtocolProcessorFactory.getProcessor(response_instance, this);
-			if(processor != null) {
-				logAndShow("Message received will be handled by a new processor.");
-				addProcessor(processor);
-				processor.initiate();
-			} else {
-				logAndShow("Message received does not trigger any new processor");				
-			}
-		}
+		handleCommand(sender, new String(response.getData(), 0, response.getLength()), response.getAddress().toString());
 	}
 
 	@Override
@@ -325,7 +312,9 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		if(sender == command_receiver_thread) {
 			logAndShow("COMMAND channel received \"" + response + "\".");			
 		} else if(sender == private_data_receiver_thread) {
-			logAndShow("Private data channel received channel received \"" + response + "\".");			
+			logAndShow("Private data channel received channel received \"" + response + "\".");		
+			handleCommand(sender, response, null);
+			return;
 		} else {
 			logAndShow("Unknown TCP channel received \"" + response + "\".");	
 		}
@@ -357,8 +346,42 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		}
 	}
 
-	private void handleCommand(ResponseGetterThread sender, String response) {
+	private void handleCommand(ResponseGetterThread sender, String response, String sender_addr) {
+		Boolean handled = false;
+		ProtocolInstance response_instance = null;
+		try {
+			response_instance = Protocols.parseMessage(response);
+		} catch(Exception e) {
+			logAndShow("Message received was not a valid Protocol message.");
+			return;
+		}
+		if(response_instance == null) {
+			logAndShow("Message received was not a valid Protocol message.");
+			return;
+		}
 		
+		if(response_instance.getHeader().getSender_id() == identifier) {
+			logAndShow("Own message received, ignoring...");
+			return;
+		}
+		
+		for(int i = 0; i < processors.size(); ++i) {
+			if(processors.get(i).handle(response_instance)) {
+				handled = true;
+				logAndShow("Message received was handled by existing processor.");
+				break;
+			}
+		}
+		if(!handled) {
+			ProtocolProcessor processor = ProtocolProcessorFactory.getProcessor(response_instance, this, sender_addr);
+			if(processor != null) {
+				logAndShow("Message received will be handled by a new processor.");
+				addProcessor(processor);
+				processor.initiate();
+			} else {
+				logAndShow("Message received does not trigger any new processor");				
+			}
+		}
 	}
 	
 	public int identifier() {

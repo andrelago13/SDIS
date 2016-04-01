@@ -27,6 +27,7 @@ public class ResponseGetterThread extends Thread {
 	
 	private Boolean single_usage = true;
 	private Boolean enabled = false;
+	private Boolean line_mode = true;
 	
 	private Type type = null;
 	
@@ -45,15 +46,16 @@ public class ResponseGetterThread extends Thread {
 	}
 
 	public ResponseGetterThread(TCPResponseHandler handler, LoggerInterface logger, ServerSocket socket) {
-		this(handler, logger, socket, true);
+		this(handler, logger, socket, true, true);
 	}
 
-	public ResponseGetterThread(TCPResponseHandler handler, LoggerInterface logger, ServerSocket socket, Boolean single_usage) {
+	public ResponseGetterThread(TCPResponseHandler handler, LoggerInterface logger, ServerSocket socket, Boolean single_usage, Boolean line_mode) {
 		type = Type.TCP;
 		this.logger = logger;
 		this.tcp_handler = handler;
 		this.tcp_socket = socket;
 		this.single_usage = single_usage;
+		this.line_mode = line_mode;
 	}
 	
 	@Override
@@ -135,20 +137,39 @@ public class ResponseGetterThread extends Thread {
 					try {
 						Socket connectionSocket = tcp_socket.accept();
 						BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+						
+						String request = "";
+						
+						if(this.line_mode) {
+							request = inFromClient.readLine();
 
-						String request = inFromClient.readLine();
+							if(!enabled) {
+								connectionSocket.close();
+								break;
+							}
+						} else {
+							char[] cbuf = new char[buf_len];
+							int read_bytes = inFromClient.read(cbuf);
+							if(read_bytes == -1) {
+								connectionSocket.close();
+								continue;
+							}
+							request = new String(cbuf, 0, read_bytes);
 
-						if(!enabled) {
-							connectionSocket.close();
-							break;
+							if(!enabled) {
+								connectionSocket.close();
+								break;
+							}							
 						}
+						
+						final String sent = request;
 
 						// Dispatches a new thread to avoid blocking upcoming messages
 						final ResponseGetterThread t = this;
 						new Thread( new Runnable() {
 							@Override
 							public void run() {
-								tcp_handler.handle(t, request, connectionSocket);
+								tcp_handler.handle(t, sent, connectionSocket);
 							}
 						}).start();
 					} catch (Exception e) {
