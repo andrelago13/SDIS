@@ -191,8 +191,6 @@ public class BackupInitiator implements ProtocolProcessor {
 	}
 	
 	public void initiate() {
-		
-		// TODO enhancement store only when appropriate
 
 		SplitFile split_file = null;
 		

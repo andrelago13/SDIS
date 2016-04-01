@@ -51,7 +51,6 @@ public class Protocols {
 	public static ProtocolInstance putChunkProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no, int replication_deg, byte[] content) throws IllegalArgumentException {
 		ProtocolHeader header = new ProtocolHeader(MessageType.PUTCHUNK, version_major, version_minor, sender_id, file_id, chunk_no, replication_deg);
 		ProtocolBody body = new ProtocolBody(content);
-		System.err.println(new String(body.getContent()));
 		return new ProtocolInstance(header, body);
 	}
 	

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.TimerTask;
 
 import backupservice.BackupService;
 import backupservice.protocols.ProtocolHeader;
@@ -14,8 +15,9 @@ import backupservice.protocols.Protocols;
 public class BackupPeer implements ProtocolProcessor {
 	
 	public static final int MAX_DELAY = 400;
-	public static final int WAIT_FOR_STORED_DELAY = 16000;
+	public static final int WAIT_FOR_STORED_DELAY = 5000;
 	public static final int MAX_ATTEMPT = 1;
+	public static final int MAX_ACTIVE_TIME = 30000;
 	
 	private BackupService service;
 	private int sender_id;
@@ -23,10 +25,13 @@ public class BackupPeer implements ProtocolProcessor {
 	private int chunk_no;
 	private int chunk_desired_replication;
 	private byte[] chunk_content;
+	private Boolean stored = false;
 	
 	private Random rand = new Random();
 	private int answer_delay;
 	private ProtocolInstance reply;
+	
+	// TODO enhancement store only when appropriate
 	
 	private Boolean active = false;
 	private int attempt = 0;
@@ -87,17 +92,16 @@ public class BackupPeer implements ProtocolProcessor {
 		
 		if(header.getFile_id().equals(file_id) && header.getChunk_no() == chunk_no && header.getSender_id() != service.getIdentifier()) {
 			if(header.getMessage_type() == Protocols.MessageType.PUTCHUNK) {
-				generateDelay();
-				replyWithDelay();
+				if(stored) {
+					generateDelay();
+					replyWithDelay();
+				}
 				return true;
 			} else if (header.getMessage_type() == Protocols.MessageType.STORED) {
 				int sender = header.getSender_id();
 				if(!responded_peers.contains(sender)) {
 					responded_peers.add(sender);
 					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size(), chunk_content.length);
-					if(responded_peers.size() >= chunk_desired_replication) {
-						terminate();
-					}
 				}
 				return true;
 			}
@@ -115,15 +119,36 @@ public class BackupPeer implements ProtocolProcessor {
 		if(!active())
 			return;
 		
-		++attempt;
-		if(attempt > MAX_ATTEMPT) {
-			terminate();
-		} else {
-			if(responded_peers.size() == prev_replies) {
-				terminate();
+		if(++attempt > MAX_ATTEMPT) {
+			if(BackupService.lastVersionActive()) {
+				if(responded_peers.size() >= chunk_desired_replication) {	// already has enough replication
+					terminate();
+				} else {
+					try {
+						storeChunk();
+					} catch (IOException e) {
+						e.printStackTrace();
+						service.logAndShowError("Unable to store received chunk");
+						terminate();
+						return;
+					}
+					generateDelay();
+					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, 1, chunk_content.length);
+					replyWithDelay();	
+				}				
 			} else {
-				prev_replies = responded_peers.size();
+				terminate();
+			}
+		} else {
+			if(BackupService.lastVersionActive()) {
 				evalDelay(WAIT_FOR_STORED_DELAY);
+			} else {
+				if(responded_peers.size() == prev_replies) {
+					terminate();
+				} else {
+					prev_replies = responded_peers.size();
+					evalDelay(WAIT_FOR_STORED_DELAY);
+				}
 			}
 		}
 	}
@@ -145,20 +170,35 @@ public class BackupPeer implements ProtocolProcessor {
 	@Override
 	public void initiate() {
 		active = true;
-		try {
-			storeChunk();
-		} catch (IOException e) {
-			e.printStackTrace();
-			service.logAndShowError("Unable to store received chunk");
-			terminate();
-			return;
-		}
-		generateDelay();
-		service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, 1, chunk_content.length);
-		replyWithDelay();
 		
-		evalDelay(WAIT_FOR_STORED_DELAY);
+		if(BackupService.lastVersionActive()) {
+			service.getTimer().schedule(new TimerTask() {
+
+				@Override
+				public void run() {
+					evalTimeout();
+				}
+				
+			}, MAX_ACTIVE_TIME);
+		} else {
+			try {
+				storeChunk();
+			} catch (IOException e) {
+				e.printStackTrace();
+				service.logAndShowError("Unable to store received chunk");
+				terminate();
+				return;
+			}
+			generateDelay();
+			service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, 1, chunk_content.length);
+			replyWithDelay();			
+		}	
 		
+		evalDelay(WAIT_FOR_STORED_DELAY);	
+	}
+	
+	private void evalTimeout() {
+		terminate();
 	}
 
 	@Override
@@ -175,6 +215,7 @@ public class BackupPeer implements ProtocolProcessor {
 		PrintWriter writer = new PrintWriter(getChunkPath());
 		writer.print(new String(chunk_content, 0, chunk_content.length));
 		writer.close();		
+		stored = true;
 	}
 
 	private String getChunkPath() {
