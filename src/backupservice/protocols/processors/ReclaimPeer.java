@@ -1,5 +1,6 @@
 package backupservice.protocols.processors;
 
+import java.io.IOException;
 import java.util.Random;
 import java.util.TimerTask;
 
@@ -68,6 +69,13 @@ public class ReclaimPeer implements ProtocolProcessor {
 		} else {
 			// unsuccessful
 			service.logAndShow("Unable to decrease actual replication of chunk #" + chunk_num + " of file " + file_hash + ". File is not present in the system.");
+		}
+		try {
+			service.logAndShow("Backing up metadata");
+			service.getMetadata().backup();
+		} catch (IOException e) {
+			e.printStackTrace();
+			service.logAndShowError("Unable to backup metadata");
 		}
 		
 		ChunkBackupInfo chunk = service.getMetadata().peerChunkBackupInfo(file_hash, chunk_num);

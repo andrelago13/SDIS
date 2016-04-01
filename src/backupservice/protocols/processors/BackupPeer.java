@@ -90,9 +90,14 @@ public class BackupPeer implements ProtocolProcessor {
 		
 		if(header.getFile_id().equals(file_id) && header.getChunk_no() == chunk_no && header.getSender_id() != service.getIdentifier()) {
 			if(header.getMessage_type() == Protocols.MessageType.PUTCHUNK) {
-				if(stored) {
+				if(BackupService.lastVersionActive()) {
+					if(stored) {
+						generateDelay();
+						replyWithDelay();
+					}					
+				} else {
 					generateDelay();
-					replyWithDelay();
+					replyWithDelay();					
 				}
 				return true;
 			} else if (header.getMessage_type() == Protocols.MessageType.STORED) {
@@ -100,6 +105,13 @@ public class BackupPeer implements ProtocolProcessor {
 				if(!responded_peers.contains(sender)) {
 					responded_peers.add(sender);
 					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size(), chunk_content.length);
+					try {
+						service.logAndShow("Backing up metadata");
+						service.getMetadata().backup();
+					} catch (IOException e) {
+						e.printStackTrace();
+						service.logAndShowError("Unable to backup metadata");
+					}
 				}
 				return true;
 			}
@@ -120,6 +132,14 @@ public class BackupPeer implements ProtocolProcessor {
 		if(++attempt > MAX_ATTEMPT) {
 			if(BackupService.lastVersionActive()) {
 				if(responded_peers.size() >= chunk_desired_replication) {	// already has enough replication
+					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size(), chunk_content.length);
+					try {
+						service.logAndShow("Backing up metadata");
+						service.getMetadata().backup();
+					} catch (IOException e) {
+						e.printStackTrace();
+						service.logAndShowError("Unable to backup metadata");
+					}
 					terminate();
 				} else {
 					try {
@@ -131,7 +151,7 @@ public class BackupPeer implements ProtocolProcessor {
 						return;
 					}
 					generateDelay();
-					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, 1, chunk_content.length);
+					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size() + 1, chunk_content.length);
 					replyWithDelay();	
 				}				
 			} else {
@@ -190,6 +210,13 @@ public class BackupPeer implements ProtocolProcessor {
 			}
 			generateDelay();
 			service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, 1, chunk_content.length);
+			try {
+				service.logAndShow("Backing up metadata");
+				service.getMetadata().backup();
+			} catch (IOException e) {
+				e.printStackTrace();
+				service.logAndShowError("Unable to backup metadata");
+			}
 			replyWithDelay();	
 			evalDelay(WAIT_FOR_STORED_DELAY);			
 		}
