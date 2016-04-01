@@ -141,7 +141,7 @@ public class BackupPeer implements ProtocolProcessor {
 			}
 		} else {
 			if(BackupService.lastVersionActive()) {
-				evalDelay(WAIT_FOR_STORED_DELAY);
+				evalDelay(getEvalDelay());
 			} else {
 				if(responded_peers.size() == prev_replies) {
 					terminate();
@@ -180,6 +180,7 @@ public class BackupPeer implements ProtocolProcessor {
 				}
 				
 			}, MAX_ACTIVE_TIME);
+			evalDelay(getEvalDelay());	
 		} else {
 			try {
 				storeChunk();
@@ -191,10 +192,9 @@ public class BackupPeer implements ProtocolProcessor {
 			}
 			generateDelay();
 			service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, 1, chunk_content.length);
-			replyWithDelay();			
-		}	
-		
-		evalDelay(WAIT_FOR_STORED_DELAY);	
+			replyWithDelay();	
+			evalDelay(WAIT_FOR_STORED_DELAY);			
+		}
 	}
 	
 	private void evalTimeout() {
@@ -220,5 +220,9 @@ public class BackupPeer implements ProtocolProcessor {
 
 	private String getChunkPath() {
 		return BackupService.BACKUP_FILE_PATH + "/" + service.getIdentifier() + "/" + file_id + "_" + chunk_no;
+	}
+
+	private int getEvalDelay() {
+		return rand.nextInt(WAIT_FOR_STORED_DELAY);
 	}
 }
