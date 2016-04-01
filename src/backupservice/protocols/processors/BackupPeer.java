@@ -80,6 +80,9 @@ public class BackupPeer implements ProtocolProcessor {
 	
 	@Override
 	public Boolean handle(ProtocolInstance message) {
+		if(!active)
+			return false;
+		
 		ProtocolHeader header = message.getHeader();
 		
 		if(header.getFile_id().equals(file_id) && header.getChunk_no() == chunk_no && header.getSender_id() != service.getIdentifier()) {
@@ -92,6 +95,9 @@ public class BackupPeer implements ProtocolProcessor {
 				if(!responded_peers.contains(sender)) {
 					responded_peers.add(sender);
 					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size(), chunk_content.length);
+					if(responded_peers.size() >= chunk_desired_replication) {
+						terminate();
+					}
 				}
 				return true;
 			}

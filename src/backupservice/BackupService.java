@@ -333,6 +333,11 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			processor = ProtocolProcessorFactory.getProcessor(new CLIProtocolInstance(response), this, connection_socket);
 		} catch (Exception e) {
 			logAndShowError("Command received was invalid.");
+			try {
+				connection_socket.close();
+			} catch (IOException e1) {
+				logAndShowError("Unable to close TCP socket.");
+			}
 			return;
 		}
 		if(processor != null) {
@@ -341,6 +346,11 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			processor.initiate();
 		} else {
 			logAndShowError("Command received does not trigger any new processor.");
+			try {
+				connection_socket.close();
+			} catch (IOException e) {
+				logAndShowError("Unable to close TCP socket.");
+			}
 			return;
 		}
 	}
