@@ -58,8 +58,6 @@ public class ReclaimPeer implements ProtocolProcessor {
 	@Override
 	public void initiate() {
 		
-		// TODO enhancement if sender is 2.3, send to private socket immediately
-		
 		active = true;
 		service.logAndShow("Notified of removal of chunk #" + chunk_num + " of file " + file_hash + " for RECLAIM protocol. Updating metadata.");
 		

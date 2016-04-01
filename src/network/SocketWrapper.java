@@ -12,4 +12,10 @@ public class SocketWrapper {
 		outToClient.close();
 	}
 	
+	public static void sendTCP(Socket socket, byte[] message) throws IOException {
+		DataOutputStream outToClient = new DataOutputStream(socket.getOutputStream());
+		outToClient.write(message);
+		outToClient.close();
+	}
+	
 }
