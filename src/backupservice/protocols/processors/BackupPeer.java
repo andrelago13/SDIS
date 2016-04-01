@@ -172,7 +172,7 @@ public class BackupPeer implements ProtocolProcessor {
 		f.getParentFile().mkdirs(); 
 		f.delete();
 		f.createNewFile();
-		PrintWriter writer = new PrintWriter(getChunkPath(), "UTF-8");
+		PrintWriter writer = new PrintWriter(getChunkPath());
 		writer.print(new String(chunk_content, 0, chunk_content.length));
 		writer.close();		
 	}
