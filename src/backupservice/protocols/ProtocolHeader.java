@@ -63,9 +63,9 @@ public class ProtocolHeader {
 		
 	}
 	
-	// DELETE
+	// DELETE, EXISTS, WASDELETED (The last two are enhancements)
 	public ProtocolHeader(MessageType type, int version_major, int version_minor, int sender_id, String file_id) throws IllegalArgumentException {
-		if(type != MessageType.DELETE) {
+		if(type != MessageType.DELETE && type != MessageType.EXISTS && type != MessageType.WASDELETED) {
 			throw new IllegalArgumentException("Message Type does not match given arguments. Expected PUTCHUNK.");
 		}
 		
