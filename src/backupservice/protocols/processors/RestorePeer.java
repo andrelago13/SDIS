@@ -86,7 +86,7 @@ public class RestorePeer implements ProtocolProcessor {
 		try {
 			Path path_obj = Paths.get(path);
 			chunk_content = Files.readAllBytes(path_obj);
-			
+
 			instance = Protocols.chunkProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
 					service.getIdentifier(), file_hash, chunk_no, chunk_content);
 		} catch (IOException e) {
@@ -100,11 +100,14 @@ public class RestorePeer implements ProtocolProcessor {
 		if(BackupService.lastVersionActive() && sender_address != null) {
 			try {
 				Socket socket = new Socket(sender_address.substring(1, sender_address.length()), BackupService.START_SOCKET_NO_PRIVATE_DATA + sender_id);
-				SocketWrapper.sendTCP(socket, instance.toString());
+				SocketWrapper.sendTCP(socket, instance.toBytes());
+				socket.close();
+				instance = Protocols.chunkProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
+						service.getIdentifier(), file_hash, chunk_no, new byte[0]);
+				sendChunk();
 				terminate();
 			} catch (IOException e) {
-				service.logAndShowError("Unable to send RESTORE chunk via TCP. Using UDP.");
-				//e.printStackTrace();
+				service.logAndShowError("Unable to send RESTORE chunk via TCP. Continuing with UDP.");
 				startDelayedResponse();	
 			}
 			// TODO ligar ao TCP

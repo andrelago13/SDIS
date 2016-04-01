@@ -44,14 +44,12 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	private MulticastSocketWrapper socket_backup = null;
 	private MulticastSocketWrapper socket_restore = null;
 	private ServerSocket own_socket = null;
-	private ServerSocket private_data_socket = null;
 	
 	private ResponseGetterThread control_receiver_thread = null;
 	private ResponseGetterThread backup_receiver_thread = null;
 	private ResponseGetterThread restore_receiver_thread = null;
 	private ResponseGetterThread command_receiver_thread = null;
 	private Timer timer = null;
-	private ResponseGetterThread private_data_receiver_thread = null;
 	
 	private ArrayList<ProtocolProcessor> processors = null;
 	
@@ -114,7 +112,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	}
 	
 	private void initiatePrivateDataSocket() throws IOException {
-		private_data_socket = new ServerSocket(START_SOCKET_NO_PRIVATE_DATA + identifier);
+		// TODO remove
+		//private_data_socket = new ServerSocket(START_SOCKET_NO_PRIVATE_DATA + identifier);
 	}
 	
 	private void initiateLogger() {
@@ -166,18 +165,20 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		backup_receiver_thread = socket_backup.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
 		restore_receiver_thread = socket_restore.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
 		command_receiver_thread = new ResponseGetterThread(this, this, own_socket, false, true);
-		if(lastVersionActive()) {
+		// TODO remove
+		/*if(lastVersionActive()) {
 			private_data_receiver_thread = new ResponseGetterThread(this, this, private_data_socket, false, true);
-		}
+		}*/
 		
 		// START RUNNING THREADS
 		control_receiver_thread.start();
 		backup_receiver_thread.start();
 		restore_receiver_thread.start();
 		command_receiver_thread.start();
-		if(lastVersionActive()) {
+		// TODO remove
+		/*if(lastVersionActive()) {
 			private_data_receiver_thread.start();
-		}
+		}*/
 		
 		try {
 			logAndShow("Listening for commands at " + InetAddress.getLocalHost().getHostAddress() + ":" + own_socket.getLocalPort());
@@ -187,13 +188,14 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		logAndShow("CONTROL channel started at " + socket_control.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
 		logAndShow("BACKUP channel started at " + socket_backup.getGroup().getHostAddress() + ":" + socket_backup.getLocalPort());
 		logAndShow("RESTORE channel started at " + socket_restore.getGroup().getHostAddress() + ":" + socket_restore.getLocalPort());
-		if(lastVersionActive()) {
+		// TODO remove
+		/*if(lastVersionActive()) {
 			try {
 				logAndShow("Private data channel started at " + InetAddress.getLocalHost().getHostAddress() + ":" + private_data_socket.getLocalPort());
 			} catch (UnknownHostException e) {
 				logAndShow("Private data channel started at localhost:" + private_data_socket.getLocalPort());
 			}			
-		}
+		}*/
 
 		logAndShow("Backup Service initialized (" + metadata.getBackupSize() + " Bytes taken).");
 	}
@@ -231,13 +233,14 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 				// do nothing
 			}
 		}
-		if(private_data_receiver_thread != null) {
+		// TODO remove
+		/*if(private_data_receiver_thread != null) {
 			try{
 				private_data_receiver_thread.interrupt();				
 			} catch (Exception e) {
 				// do nothing
 			}
-		}
+		}*/
 		
 		try {
 			socket_control.dispose();
@@ -263,14 +266,15 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			e.printStackTrace();
 			logAndShowError("Unable to dispose of COMMAND channel socket.");
 		}
-		if(private_data_socket != null) {
+		// TODO remove
+		/*if(private_data_socket != null) {
 			try {
 				private_data_socket.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 				logAndShowError("Unable to dispose of COMMAND channel socket.");
 			}
-		}	
+		}	*/
 		
 		System.out.println(processors.size());
 		for(int i = 0; i < processors.size(); ++i) {
@@ -290,11 +294,11 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	@Override
 	public void handle(ResponseGetterThread sender, DatagramPacket response) {		
 		if(sender == control_receiver_thread) {
-			logAndShow("CONTROL channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");
+			logAndShow("MC IN: \"" + new String(response.getData(), 0, response.getLength()) + "\".");
 		} else if(sender == backup_receiver_thread) {
-			logAndShow("BACKUP channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");
+			logAndShow("MDB IN: \"" + new String(response.getData(), 0, response.getLength()) + "\".");
 		} else if(sender == restore_receiver_thread) {
-			logAndShow("RESTORE channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");
+			logAndShow("MDR IN: \"" + new String(response.getData(), 0, response.getLength()) + "\".");
 		} else {
 			logAndShow("Unknown UDP channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");			
 		}
@@ -311,13 +315,16 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		
 		if(sender == command_receiver_thread) {
 			logAndShow("COMMAND channel received \"" + response + "\".");			
-		} else if(sender == private_data_receiver_thread) {
-			logAndShow("Private data channel received channel received \"" + response + "\".");		
-			handleCommand(sender, response, null);
-			return;
 		} else {
 			logAndShow("Unknown TCP channel received \"" + response + "\".");	
 		}
+		/*
+		 else if(sender == private_data_receiver_thread) {
+			logAndShow("Private data channel received channel received \"" + response + "\".");		
+			handleCommand(sender, response, null);
+			return;
+		} 
+		 */
 		
 		ProtocolProcessor processor = null;
 		try {

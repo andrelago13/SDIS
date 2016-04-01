@@ -1,15 +1,19 @@
 package backupservice.protocols.processors;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.TimerTask;
 
+import network.ResponseGetterThread;
 import network.SocketWrapper;
 import filesystem.FileChunk;
 import filesystem.metadata.FileBackupInfo;
@@ -96,7 +100,17 @@ public class RestoreInitiator implements ProtocolProcessor {
 			
 			got_chunk = true;
 			received_chunks.add(new FileChunk(chunk_no, message.getBody().getContent(), -1));
+
+			notifyReception(chunk_no);			
+		}
+		
+		private void handleTCP(ProtocolInstance message) {
+			if(got_chunk)
+				return;
 			
+			got_chunk = true;
+			received_chunks.add(new FileChunk(chunk_no, message.getBody().getContent(), -1));
+
 			notifyReception(chunk_no);
 		}
 		
@@ -132,6 +146,20 @@ public class RestoreInitiator implements ProtocolProcessor {
 		return false;
 	}
 
+	private void handleTCP(String message) {
+		ProtocolInstance instance_tcp = Protocols.parseMessage(message);
+		if(instance_tcp != null) {
+			for(int i = 0; i < restorers.size(); ++i) {
+				if(restorers.get(i).interested(instance_tcp)) {
+					restorers.get(i).handleTCP(instance_tcp);
+					return;
+				}
+			}
+		}
+		// TODO
+		//System.out.println(message);
+	}
+	
 	@Override
 	public Boolean active() {
 		return active;
