@@ -324,6 +324,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		
 		if(sender == command_receiver_thread) {
 			logAndShow("COMMAND channel received \"" + response + "\".");			
+		} else if(sender == private_data_receiver_thread) {
+			logAndShow("Private data channel received channel received \"" + response + "\".");			
 		} else {
 			logAndShow("Unknown TCP channel received \"" + response + "\".");	
 		}
@@ -355,6 +357,10 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		}
 	}
 
+	private void handleCommand(ResponseGetterThread sender, String response) {
+		
+	}
+	
 	public int identifier() {
 		return identifier;
 	}
