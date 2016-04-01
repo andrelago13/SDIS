@@ -317,7 +317,9 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 
 	@Override
 	public void handle(ResponseGetterThread sender, String response, Socket connection_socket) {
-		if(response.equals("EXIT")) {
+		if(response == null)
+			return;
+		else if(response.equals("EXIT")) {
 			terminate();
 			return;
 		}

@@ -20,6 +20,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 	private BackupService service = null;
 	private String filePath = null;
+	private String fileHash = null;
 
 	private Socket responseSocket = null;
 	private Boolean active = false;
@@ -62,7 +63,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 		}
 
 		try {
-			notifyDelete(mg);
+			notifyDelete(fileHash);
 		} catch (IOException e) {
 			e.printStackTrace();
 			if(responseSocket != null) {
@@ -74,14 +75,15 @@ public class DeleteInitiator implements ProtocolProcessor {
 				}
 			}
 		}
+		active = true;
 		startDelete();
 	}
 
-	public void notifyDelete(MetadataManager mg) throws IOException
+	public void notifyDelete(String Hash) throws IOException
 	{
-		service.show("File Hash to be deleted: " + mg.ownFileBackupInfo_path(filePath).getHash());
+		service.show("File Hash to be deleted: " + Hash);
 		ProtocolInstance instance = Protocols.deleteProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
-				service.getIdentifier(), mg.ownFileBackupInfo_path(filePath).getHash());
+				service.getIdentifier(), Hash);
 		service.sendControlSocket(instance.toString());
 	}
 
@@ -102,9 +104,9 @@ public class DeleteInitiator implements ProtocolProcessor {
 	public void eval() {
 		if(!active)
 			return;
-		
+
 		if(currentAttempt == 2) {
-			service.logAndShow("Removing file with" + filePath + ", attempt " + currentAttempt + ")");
+			service.logAndShow("Removed file with path: " + filePath + ")");
 			if(responseSocket != null) {
 				try {
 					SocketWrapper.sendTCP(responseSocket, ""+ EndCondition.SUCCESS.ordinal());
@@ -117,7 +119,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 		}
 		else {
 			try {
-				notifyDelete(mg);
+				notifyDelete(fileHash);
 			} catch (IOException e) {
 				e.printStackTrace();
 				if(responseSocket != null) {
@@ -129,8 +131,8 @@ public class DeleteInitiator implements ProtocolProcessor {
 					}
 				}
 			}
-			++currentAttempt;
-			startDelete();					
+				++currentAttempt;
+				startDelete();					
 		}
 	}
 
@@ -153,6 +155,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 		if(mg.ownFileBackupInfo_path(pathFile) != null)
 			if(utils.Files.fileValid(pathFile))
 			{
+				fileHash = mg.ownFileBackupInfo_path(filePath).getHash();
 				// Remove file
 				utils.Files.removeFile(pathFile);
 				// Remove file from metadata
