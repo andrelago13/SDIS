@@ -145,7 +145,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		return timer;
 	}
 	
-	public MulticastSocketWrapper getControlSocket() {
+	/*public MulticastSocketWrapper getControlSocket() {
 		return socket_control;
 	}
 	
@@ -155,7 +155,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	
 	public MulticastSocketWrapper getRestoreSocket() {
 		return socket_restore;
-	}
+	}*/
 
 	public void initiate() {
 		logAndShow("Backup Service initializing...");
@@ -414,5 +414,20 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 
 	public static Boolean lastVersionActive() {
 		return Protocols.versionMajor() == CURRENT_VERSION_MAJOR && Protocols.versionMinor() == CURRENT_VERSION_MINOR;
+	}
+
+	public void sendControlSocket(String message) throws IOException {
+		logAndShow("MC OUT: " + message);
+		socket_control.send(message);
+	}
+	
+	public void sendBackupSocket(String message) throws IOException {
+		logAndShow("MDB OUT: " + message);
+		socket_backup.send(message);
+	}
+	
+	public void sendRestoreSocket(String message) throws IOException {
+		logAndShow("MDR OUT: " + message);
+		this.socket_restore.send(message);
 	}
 }

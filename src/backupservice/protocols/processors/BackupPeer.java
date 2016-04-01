@@ -62,7 +62,7 @@ public class BackupPeer implements ProtocolProcessor {
 		            @Override
 		            public void run() {
 		                try {
-							service.getControlSocket().send(reply.toString());
+		                	service.sendControlSocket(reply.toString());
 						} catch (IOException e) {
 							e.printStackTrace();
 							service.logAndShowError("Unable to reply STORED");

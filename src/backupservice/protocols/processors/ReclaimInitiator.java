@@ -127,7 +127,7 @@ public class ReclaimInitiator implements ProtocolProcessor {
 	public void notifyRemoval(ChunkBackupInfo chunk) throws IOException {
 		ProtocolInstance instance = Protocols.removedProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
 				service.getIdentifier(), chunk.getFileHash(), chunk.getNum());
-		service.getControlSocket().send(instance.toString());
+		service.sendControlSocket(instance.toString());
 	}
 	
 	public void removeChunk(ChunkBackupInfo chunk) {

@@ -81,7 +81,7 @@ public class DeleteInitiator implements ProtocolProcessor {
 	{
 		ProtocolInstance instance = Protocols.deleteProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
 				service.getIdentifier(), mg.ownFileBackupInfo_path(filePath).getHash());
-		service.getControlSocket().send(instance.toString());
+		service.sendControlSocket(instance.toString());
 	}
 
 

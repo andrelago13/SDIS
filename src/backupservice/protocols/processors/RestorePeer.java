@@ -117,7 +117,7 @@ public class RestorePeer implements ProtocolProcessor {
 	private void sendChunk() {
 		if(instance != null) {
 			try {
-				service.getRestoreSocket().send(instance.toString());
+				service.sendRestoreSocket(instance.toString());
 			} catch (IOException e) {
 				e.printStackTrace();
 				service.logAndShowError("Unable to send CHUNK instance of chunk #" + chunk_no + " of file " + file_hash + "requested by peer " + sender_id + ". Terminating.");

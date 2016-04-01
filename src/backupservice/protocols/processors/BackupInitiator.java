@@ -42,7 +42,6 @@ public class BackupInitiator implements ProtocolProcessor {
 		private FileChunk chunk = null;
 		private int replication_deg = -1;
 		private BackupService service = null;
-		private MulticastSocketWrapper outgoing_socket = null;
 		
 		private int current_attempt = 0;
 		private ArrayList<Integer> responded_peers = null;
@@ -52,7 +51,6 @@ public class BackupInitiator implements ProtocolProcessor {
 			this.chunk = chunk;
 			this.replication_deg = replication_deg;
 			this.service = service;
-			this.outgoing_socket = this.service.getBackupSocket();
 			this.responded_peers = new ArrayList<Integer>();
 		}
 		
@@ -63,7 +61,7 @@ public class BackupInitiator implements ProtocolProcessor {
 			
 			byte[] packet_bytes = instance.toBytes();
 			try {
-				outgoing_socket.send(packet_bytes, packet_bytes.length);
+				service.sendBackupSocket(new String(packet_bytes, 0, packet_bytes.length));
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				try {

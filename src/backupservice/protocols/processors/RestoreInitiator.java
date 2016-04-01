@@ -66,7 +66,7 @@ public class RestoreInitiator implements ProtocolProcessor {
 		public void sendCommand() {
 			service.logAndShow("RESTORE chunk #" + chunk_no + ", file " + file_hash + ".");
 			try {
-				service.getControlSocket().send(reply.toString());
+				service.sendControlSocket(reply.toString());
 			} catch (IOException e) {
 				e.printStackTrace();
 				service.logAndShowError("Unable to send GETCHUNK, CONTROL channel not reachable.");
