@@ -23,11 +23,15 @@ public class ReclaimPeer implements ProtocolProcessor {
 	private Random random = new Random();
 	private int delay = -1;
 	private int chunk_replication = 0;
+	private int msg_version_major = Protocols.PROTOCOL_VERSION_MAJOR;
+	private int msg_version_minor = Protocols.PROTOCOL_VERSION_MINOR;
 	
-	public ReclaimPeer(BackupService service, String file_hash, int chunk_num) {
+	public ReclaimPeer(BackupService service, String file_hash, int chunk_num, int sender_version_major, int sender_version_minor) {
 		this.service = service;
 		this.file_hash = file_hash;
 		this.chunk_num = chunk_num;
+		msg_version_major = sender_version_major;
+		msg_version_minor = sender_version_minor;
 	}
 
 	@Override
@@ -52,8 +56,11 @@ public class ReclaimPeer implements ProtocolProcessor {
 
 	@Override
 	public void initiate() {
+		
+		// TODO enhancement if sender is 2.3, send to private socket immediately
+		
 		active = true;
-		service.logAndShow("Notified removal of chunk #" + chunk_num + " of file " + file_hash + " for RECLAIM protocol. Updating metadata.");
+		service.logAndShow("Notified of removal of chunk #" + chunk_num + " of file " + file_hash + " for RECLAIM protocol. Updating metadata.");
 		
 		if(service.getMetadata().decreasePeerChunkReplication(file_hash, chunk_num)) {
 			// successful

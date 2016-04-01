@@ -32,7 +32,7 @@ public abstract class ProtocolProcessorFactory {
 			break;
 		case REMOVED:
 			if(header.getSender_id() != service.getIdentifier()) {
-				return new ReclaimPeer(service, header.getFile_id(), header.getChunk_no());
+				return new ReclaimPeer(service, header.getFile_id(), header.getChunk_no(), header.getVersion_major(), header.getVersion_minor());
 			}
 		default:
 			break;

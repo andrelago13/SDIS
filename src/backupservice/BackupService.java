@@ -30,7 +30,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	public final static int CURRENT_VERSION_MAJOR = 2;
 	public final static int CURRENT_VERSION_MINOR = 3;
 	
-	private final static int START_SOCKET_NO = 45824;
+	private final static int START_SOCKET_NO = 40000;
+	private final static int START_SOCKET_NO_PRIVATE_DATA = 42000;
 	
 	public static final String BACKUP_FILE_PATH = "resources/backups/";
 	
@@ -43,7 +44,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	private MulticastSocketWrapper socket_backup = null;
 	private MulticastSocketWrapper socket_restore = null;
 	private ServerSocket own_socket = null;
-	private DatagramSocketWrapper private_data_socket = null;
+	private ServerSocket private_data_socket = null;
 	
 	private ResponseGetterThread control_receiver_thread = null;
 	private ResponseGetterThread backup_receiver_thread = null;
@@ -112,8 +113,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		
 	}
 	
-	private void initiatePrivateDataSocket() throws SocketException {
-		private_data_socket = new DatagramSocketWrapper(START_SOCKET_NO + identifier);
+	private void initiatePrivateDataSocket() throws IOException {
+		private_data_socket = new ServerSocket(START_SOCKET_NO_PRIVATE_DATA + identifier);
 	}
 	
 	private void initiateLogger() {
@@ -166,7 +167,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		restore_receiver_thread = socket_restore.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
 		command_receiver_thread = new ResponseGetterThread(this, this, own_socket, false);
 		if(lastVersionActive()) {
-			private_data_receiver_thread = private_data_socket.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
+			private_data_receiver_thread = new ResponseGetterThread(this, this, private_data_socket, false);
 		}
 		
 		// START RUNNING THREADS
@@ -316,7 +317,6 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 
 	@Override
 	public void handle(ResponseGetterThread sender, String response, Socket connection_socket) {
-		// FIXME remove after testing
 		if(response.equals("EXIT")) {
 			terminate();
 			return;

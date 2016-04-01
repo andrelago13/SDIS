@@ -31,8 +31,6 @@ public class BackupPeer implements ProtocolProcessor {
 	private int answer_delay;
 	private ProtocolInstance reply;
 	
-	// TODO enhancement store only when appropriate
-	
 	private Boolean active = false;
 	private int attempt = 0;
 	private int prev_replies = 0;
