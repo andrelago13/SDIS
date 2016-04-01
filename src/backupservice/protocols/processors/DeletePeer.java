@@ -36,7 +36,7 @@ public class DeletePeer implements ProtocolProcessor {
 	@Override
 	public void initiate() {
 
-		service.logAndShow("Starting DeleteInitiator...");
+		service.logAndShow("Starting DeletePeer...");
 
 		mg = service.getMetadata();
 		
@@ -59,7 +59,7 @@ public class DeletePeer implements ProtocolProcessor {
 	public Boolean checkpeerFile(FileBackupInfo p)
 	{
 		if(p == null) {
-			service.logAndShow("File with " + file_hash + "requested by peer is not present. Terminating.");
+			service.logAndShow("File with " + file_hash + " requested by peer is not present. Terminating.");
 			terminate();
 			return false;
 		}
