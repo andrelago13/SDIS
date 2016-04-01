@@ -44,7 +44,11 @@ public class Protocols {
 		DELETE,
 
 		// Space Reclaiming Protocol
-		REMOVED
+		REMOVED,
+		
+		// File Deletion Enhancements
+		EXISTS,
+		WASDELETED
 
 	}
 	
@@ -77,6 +81,17 @@ public class Protocols {
 	
 	public static ProtocolInstance removedProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no) throws IllegalArgumentException {
 		ProtocolHeader header = new ProtocolHeader(MessageType.REMOVED, version_major, version_minor, sender_id, file_id, chunk_no);
+		return new ProtocolInstance(header);
+	}
+	
+	// Enhancements 
+	public static ProtocolInstance existsProtocolInstance(int version_major, int version_minor, int sender_id, String file_id) throws IllegalArgumentException {
+		ProtocolHeader header = new ProtocolHeader(MessageType.EXISTS, version_major, version_minor, sender_id, file_id);
+		return new ProtocolInstance(header);
+	}
+	
+	public static ProtocolInstance wasdeletedProtocolInstance(int version_major, int version_minor, int sender_id, String file_id) throws IllegalArgumentException {
+		ProtocolHeader header = new ProtocolHeader(MessageType.EXISTS, version_major, version_minor, sender_id, file_id);
 		return new ProtocolInstance(header);
 	}
 
