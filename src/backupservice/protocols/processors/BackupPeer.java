@@ -19,6 +19,8 @@ public class BackupPeer implements ProtocolProcessor {
 	public static final int MAX_ATTEMPT = 1;
 	public static final int MAX_ACTIVE_TIME = 30000;
 	
+	// FIXME termina antes do suposto
+	
 	private BackupService service;
 	private int sender_id;
 	private String file_id;

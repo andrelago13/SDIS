@@ -18,6 +18,7 @@ public class MetadataManager implements Serializable {
 	
 	private ArrayList<FileBackupInfo> own_files = null;
 	private ArrayList<FileBackupInfo> peer_files = null;
+	private ArrayList<String> deleted_peer_files = null;
 
 	public void getFromFile() {
 		try {
@@ -42,6 +43,11 @@ public class MetadataManager implements Serializable {
 		result += "============" + '\n';
 		for(int i = 0; i < peer_files.size(); ++i) {
 			result += peer_files.get(i).toFileFormat() + '\n';
+		}
+		result += "============" + '\n';
+		result += "" + deleted_peer_files.size() + '\n';
+		for(int i = 0; i < deleted_peer_files.size(); ++i) {
+			result += deleted_peer_files.get(i) + '\n';
 		}
 		
 		return result;
@@ -111,6 +117,15 @@ public class MetadataManager implements Serializable {
 		    	peer_files.add(file);
 		    }
 		    
+		    line = br.readLine();
+		    line = br.readLine();
+		    
+		    int deletedFilesLen = Integer.parseInt(line);
+		    
+		    for(int i = 0; i < deletedFilesLen; ++i) {
+		    	deleted_peer_files.add(br.readLine());
+		    }
+		    
 		} catch (Exception e) {
 			return false;
 		}
@@ -122,6 +137,7 @@ public class MetadataManager implements Serializable {
 		this.id = id;
 		own_files = new ArrayList<FileBackupInfo>();
 		peer_files = new ArrayList<FileBackupInfo>();
+		deleted_peer_files = new ArrayList<String>();
 		fromFile();
 	}
 	
@@ -307,4 +323,15 @@ public class MetadataManager implements Serializable {
 		
 		return false;
 	}
+
+	public ArrayList<String> getDeletedPeerFiles() {
+		return deleted_peer_files;
+	}
+
+	public void addDeletedFile(String hash) {
+		if(!deleted_peer_files.contains(hash)) {
+			deleted_peer_files.add(hash);
+		}
+	}
+	
 }
