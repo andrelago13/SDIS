@@ -91,7 +91,7 @@ public class Protocols {
 	}
 	
 	public static ProtocolInstance wasdeletedProtocolInstance(int version_major, int version_minor, int sender_id, String file_id) throws IllegalArgumentException {
-		ProtocolHeader header = new ProtocolHeader(MessageType.EXISTS, version_major, version_minor, sender_id, file_id);
+		ProtocolHeader header = new ProtocolHeader(MessageType.WASDELETED, version_major, version_minor, sender_id, file_id);
 		return new ProtocolInstance(header);
 	}
 
@@ -174,6 +174,26 @@ public class Protocols {
 			String[] version_tokens = header_split[1].split("\\.");
 			
 			ProtocolHeader header = new ProtocolHeader(MessageType.REMOVED, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(header_split[2]), header_split[3], Integer.parseInt(header_split[4]));			
+		
+			return new ProtocolInstance(header);			
+		}
+		else if(message_type.equals(MessageType.EXISTS.toString())) {
+			if(header_split.length != 4)
+				throw new IllegalArgumentException("Invalid message buffer (EXISTS expects 3 aditional tokens).");
+			
+			String[] version_tokens = header_split[1].split("\\.");
+			
+			ProtocolHeader header = new ProtocolHeader(MessageType.EXISTS, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(header_split[2]), header_split[3]);			
+		
+			return new ProtocolInstance(header);			
+		}
+		else if(message_type.equals(MessageType.WASDELETED.toString())) {
+			if(header_split.length != 4)
+				throw new IllegalArgumentException("Invalid message buffer (WASDELETED expects 3 aditional tokens).");
+			
+			String[] version_tokens = header_split[1].split("\\.");
+			
+			ProtocolHeader header = new ProtocolHeader(MessageType.WASDELETED, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(header_split[2]), header_split[3]);			
 		
 			return new ProtocolInstance(header);			
 		}
