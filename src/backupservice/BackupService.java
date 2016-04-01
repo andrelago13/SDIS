@@ -161,12 +161,12 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		logAndShow("Backup Service initializing...");
 		
 		// INITIALIZE THREAD OBJECTS
-		control_receiver_thread = socket_control.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH);
-		backup_receiver_thread = socket_backup.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH);
-		restore_receiver_thread = socket_restore.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH);
+		control_receiver_thread = socket_control.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
+		backup_receiver_thread = socket_backup.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
+		restore_receiver_thread = socket_restore.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
 		command_receiver_thread = new ResponseGetterThread(this, this, own_socket, false);
 		if(lastVersionActive()) {
-			private_data_receiver_thread = private_data_socket.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH);
+			private_data_receiver_thread = private_data_socket.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
 		}
 		
 		// START RUNNING THREADS
