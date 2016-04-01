@@ -255,6 +255,15 @@ public class BackupInitiator implements ProtocolProcessor {
 	public void terminate() {
 		active = false;
 		
+		if(response_socket != null) {
+			try {
+				response_socket.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		
 		for(int i = 0; i < senders.size(); ++i) {
 			try {
 				senders.get(i).interrupt();
