@@ -152,6 +152,13 @@ public class BackupPeer implements ProtocolProcessor {
 					}
 					generateDelay();
 					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size() + 1, chunk_content.length);
+					try {
+						service.logAndShow("Backing up metadata");
+						service.getMetadata().backup();
+					} catch (IOException e) {
+						e.printStackTrace();
+						service.logAndShowError("Unable to backup metadata");
+					}
 					replyWithDelay();	
 				}				
 			} else {
