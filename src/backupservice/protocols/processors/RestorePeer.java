@@ -16,6 +16,8 @@ import backupservice.protocols.Protocols;
 
 public class RestorePeer implements ProtocolProcessor {
 	
+	// TODO enhancement enviar diretamente apenas para o emissor
+	
 	public final static int MAX_DELAY = 400;
 	
 	private int sender_id;
@@ -97,23 +99,7 @@ public class RestorePeer implements ProtocolProcessor {
 		}
 
 		active = true;
-		if(BackupService.lastVersionActive() && sender_address != null) {
-			try {
-				Socket socket = new Socket(sender_address.substring(1, sender_address.length()), BackupService.START_SOCKET_NO_PRIVATE_DATA + sender_id);
-				SocketWrapper.sendTCP(socket, instance.toBytes());
-				socket.close();
-				instance = Protocols.chunkProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
-						service.getIdentifier(), file_hash, chunk_no, new byte[0]);
-				sendChunk();
-				terminate();
-			} catch (IOException e) {
-				service.logAndShowError("Unable to send RESTORE chunk via TCP. Continuing with UDP.");
-				startDelayedResponse();	
-			}
-			// TODO ligar ao TCP
-		} else {
-			startDelayedResponse();			
-		}
+		startDelayedResponse();
 	}
 	
 	private void generateDelay() {
