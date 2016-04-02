@@ -1,5 +1,7 @@
 package backupservice.protocols;
 
+import java.util.Arrays;
+
 public class Protocols {
 	
 	public static final int MAX_PACKET_LENGTH = 64000; //64KB
@@ -80,7 +82,7 @@ public class Protocols {
 		return new ProtocolInstance(header);
 	}
 
-	public static ProtocolInstance parseMessage(String message) throws IllegalArgumentException {
+	public static ProtocolInstance parseMessage(String message, byte[] message_buffer, int message_length) throws IllegalArgumentException {
 		String message_str = new String(message);
 		String[] temp = (message_str).split(LINE_SEPARATOR);
 		
@@ -108,7 +110,8 @@ public class Protocols {
 			}
 			
 			ProtocolHeader header = new ProtocolHeader(MessageType.PUTCHUNK, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(header_split[2]), header_split[3], Integer.parseInt(header_split[4]), Integer.parseInt(header_split[5]));
-			ProtocolBody body = new ProtocolBody(message_str.substring(message_str.indexOf(LINE_SEPARATOR) + 2*LINE_SEPARATOR.length(), message_str.length()).getBytes());
+			int start = message_str.indexOf(LINE_SEPARATOR) + 2*LINE_SEPARATOR.length();
+			ProtocolBody body = new ProtocolBody(Arrays.copyOfRange(message_buffer, start, message_length));
 			
 			return new ProtocolInstance(header, body);
 		} else if(message_type.equals(MessageType.STORED.toString())) {
@@ -140,7 +143,8 @@ public class Protocols {
 			}
 			
 			ProtocolHeader header = new ProtocolHeader(MessageType.CHUNK, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(header_split[2]), header_split[3], Integer.parseInt(header_split[4]));
-			ProtocolBody body = new ProtocolBody(message_str.substring(message_str.indexOf(LINE_SEPARATOR) + 2*LINE_SEPARATOR.length(), message_str.length()).getBytes());
+			int start = message_str.indexOf(LINE_SEPARATOR) + 2*LINE_SEPARATOR.length();
+			ProtocolBody body = new ProtocolBody(Arrays.copyOfRange(message_buffer, start, message_length));
 			
 			return new ProtocolInstance(header, body);			
 		} else if(message_type.equals(MessageType.DELETE.toString())) {

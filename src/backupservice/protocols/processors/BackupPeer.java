@@ -1,6 +1,7 @@
 package backupservice.protocols.processors;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -72,7 +73,8 @@ public class BackupPeer implements ProtocolProcessor {
 		            				return;
 		            			}
 			            		try {
-				                	service.sendControlSocket(reply.toString());
+			            			byte[] buffer = reply.toBytes();
+				                	service.sendControlSocket(buffer, buffer.length);
 								} catch (IOException e) {
 									e.printStackTrace();
 									service.logAndShowError("Unable to reply STORED");
@@ -84,7 +86,8 @@ public class BackupPeer implements ProtocolProcessor {
 		            		}
 		            	} else {
 		            		try {
-			                	service.sendControlSocket(reply.toString());
+		            			byte[] buffer = reply.toBytes();
+			                	service.sendControlSocket(buffer, buffer.length);
 							} catch (IOException e) {
 								e.printStackTrace();
 								service.logAndShowError("Unable to reply STORED");
@@ -211,14 +214,21 @@ public class BackupPeer implements ProtocolProcessor {
 	}
 	
 	private void storeChunk() throws IOException {
-		File f = new File(getChunkPath());
+		String path = getChunkPath();
+		
+		File f = new File(path);
 		f.getParentFile().mkdirs(); 
 		f.delete();
 		f.createNewFile();
-		PrintWriter writer = new PrintWriter(getChunkPath());
+
+		FileOutputStream fos = new FileOutputStream(path);
+		fos.write(chunk_content);
+		fos.close();
+		
+		/*PrintWriter writer = new PrintWriter(getChunkPath());
 		writer.print(new String(chunk_content, 0, chunk_content.length));
 		writer.close();		
-		stored = true;
+		stored = true;*/
 	}
 
 	private String getChunkPath() {

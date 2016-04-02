@@ -62,7 +62,7 @@ public class BackupInitiator implements ProtocolProcessor {
 			
 			byte[] packet_bytes = instance.toBytes();
 			try {
-				service.sendBackupSocket(new String(packet_bytes, 0, packet_bytes.length));
+				service.sendBackupSocket(packet_bytes, packet_bytes.length);
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				service.logAndShowError("Multicast address not reachable.");

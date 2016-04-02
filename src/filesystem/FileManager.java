@@ -7,8 +7,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 public class FileManager 
@@ -56,31 +61,38 @@ public class FileManager
 	
 	public static SplitFile splitFile(String filename, int owner, int replicationNum, int chunkSize) throws IOException, NoSuchAlgorithmException
 	{
+		Path path = Paths.get(filename);
+		byte[] data = Files.readAllBytes(path);
 
 		File file = new File(filename);
 		String fileIdHashed = utils.Hash.hashFile(filename, owner, replicationNum, file);
 		SplitFile splitFile = new SplitFile(fileIdHashed);
 		
-		
-		FileInputStream readStream = new FileInputStream(file);
-		BufferedReader br = new BufferedReader(new InputStreamReader(readStream));
 		int fileSize = (int)file.length();
 		
 		int chunkPart = 0;
 		Boolean fileSizeMultiple = true;
 		
 		while(fileSize > 0)
-		{
-			char[] chunkContentPart = new char[chunkSize];
-			int readBytes = br.read(chunkContentPart, 0, chunkSize);
-			
+		{			
 			if(fileSize < chunkSize) {
 				fileSizeMultiple = false;
 			}
 			
-			fileSize -= readBytes;
+			byte[] part = new byte[0];
+			int limit = chunkPart*chunkSize + chunkSize;
+			if(limit > data.length)
+				limit = data.length;
 			
-			FileChunk chunk = new FileChunk(chunkPart, new String(chunkContentPart, 0, readBytes).getBytes(), replicationNum);
+			if(fileSizeMultiple) {
+				part = Arrays.copyOfRange(data, chunkPart*chunkSize, limit);
+			} else {
+				part = Arrays.copyOfRange(data, chunkPart*chunkSize, limit);
+			}
+			
+			fileSize -= part.length;
+			
+			FileChunk chunk = new FileChunk(chunkPart, part, replicationNum);
 			splitFile.getChunkList().add(chunk);
 			chunkPart++;
 		}
@@ -88,8 +100,6 @@ public class FileManager
 		if(fileSizeMultiple) {
 			splitFile.getChunkList().add(new FileChunk(chunkPart, new byte[0], replicationNum));
 		}
-		
-		readStream.close();
 		
 		Collections.sort(splitFile.getChunkList());
 		return splitFile;	

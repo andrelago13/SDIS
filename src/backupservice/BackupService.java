@@ -7,6 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Timer;
 
@@ -281,7 +282,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			logAndShow("Unknown UDP channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");			
 		}
 		
-		handleCommand(sender, new String(response.getData(), 0, response.getLength()), response.getAddress().toString());
+		handleCommand(sender, new String(response.getData(), 0, response.getLength()), response.getData(), response.getLength(), response.getAddress().toString());
 	}
 
 	@Override
@@ -333,17 +334,18 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		}
 	}
 
-	private void handleCommand(ResponseGetterThread sender, String response, String sender_addr) {
+	private void handleCommand(ResponseGetterThread sender, String response, byte[] response_bytes, int response_length, String sender_addr) {
 		Boolean handled = false;
 		ProtocolInstance response_instance = null;
 		try {
-			response_instance = Protocols.parseMessage(response);
+			response_instance = Protocols.parseMessage(response, response_bytes, response_length);
 		} catch(Exception e) {
-			logAndShow("Message received was not a valid Protocol message.");
+			e.printStackTrace();
+			logAndShow("Message received was not a valid Protocol message 1.");
 			return;
 		}
 		if(response_instance == null) {
-			logAndShow("Message received was not a valid Protocol message.");
+			logAndShow("Message received was not a valid Protocol message 2.");
 			return;
 		}
 		
@@ -434,24 +436,24 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		return Protocols.versionMajor() == CURRENT_VERSION_MAJOR && Protocols.versionMinor() == CURRENT_VERSION_MINOR;
 	}
 
-	public void sendControlSocket(String message) throws IOException {
-		logAndShow("MC OUT: " + message);
-		socket_control.send(message);
+	public void sendControlSocket(byte[] message, int length) throws IOException {
+		logAndShow("MC OUT: " + new String(message, 0, length));
+		socket_control.send(message, length);
 	}
 	
-	public void sendBackupSocket(String message) throws IOException {
-		logAndShow("MDB OUT: " + message);
-		socket_backup.send(message);
+	public void sendBackupSocket(byte[] message, int length) throws IOException {
+		logAndShow("MDB OUT: " + new String(message, 0, length));
+		socket_backup.send(message, length);
 	}
 	
-	public void sendRestoreSocket(String message) throws IOException {
-		logAndShow("MDR OUT: " + message);
-		this.socket_restore.send(message);
+	public void sendRestoreSocket(byte[] message, int length) throws IOException {
+		logAndShow("MDR OUT: " + new String(message, 0, length));
+		this.socket_restore.send(message, length);
 	}
 
-	public void sendPrivateData(String message, String address, int port) throws IOException {
-		logAndShow("Private Data OUT: " + message);
-		this.socket_private_data.send(message.getBytes(), message.length(), address, port);
+	public void sendPrivateData(byte[] message, int length, String address, int port) throws IOException {
+		logAndShow("Private Data OUT: " + new String(message, 0, length));
+		this.socket_private_data.send(message, length, address, port);
 	}
 	
 	public void backupMetadata() {
