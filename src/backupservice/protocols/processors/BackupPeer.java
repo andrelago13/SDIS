@@ -14,6 +14,8 @@ import backupservice.protocols.Protocols;
 
 public class BackupPeer implements ProtocolProcessor {
 	
+	// TODO enhancement se no fim da espera ainda não houver replicação suficiente, volta a tentar mas de forma a ninguém volta
+	
 	public static final int MAX_DELAY = 400;
 	public static final int WAIT_FOR_STORED_DELAY = 6000;
 	public static final int MAX_ATTEMPT = 2;
