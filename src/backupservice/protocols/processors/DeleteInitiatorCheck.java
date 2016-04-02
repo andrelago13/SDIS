@@ -41,6 +41,7 @@ public class DeleteInitiatorCheck implements ProtocolProcessor {
 		checkFileHash(peerFiles);
 
 		service.logAndShow("Prepare to send message to each file...");
+		terminate();
 	}
 
 	public void checkFileHash(ArrayList<String> deleted_files)
