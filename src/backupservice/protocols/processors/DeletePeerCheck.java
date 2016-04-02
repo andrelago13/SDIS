@@ -83,7 +83,8 @@ public class DeletePeerCheck implements ProtocolProcessor {
 	{
 		ProtocolInstance instance = Protocols.wasdeletedProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
 				service.getIdentifier(), Hash);
-		service.sendControlSocket(instance.toString());
+		byte[] buffer = instance.toBytes();
+		service.sendControlSocket(buffer, buffer.length);
 	}
 
 	@Override

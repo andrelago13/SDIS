@@ -63,7 +63,8 @@ public class DeleteInitiatorCheck implements ProtocolProcessor {
 	{
 		ProtocolInstance instance = Protocols.existsProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
 				service.getIdentifier(), Hash);
-		service.sendControlSocket(instance.toString());
+		byte[] buffer = instance.toBytes();
+		service.sendControlSocket(buffer, buffer.length);
 	}
 
 	@Override
