@@ -95,7 +95,7 @@ public class DeleteInitiatorCheck implements ProtocolProcessor {
 						utils.Files.removeFile(path);
 						mg.peerFilesInfo().remove(mg.peerChunkBackupInfo(header.getFile_id(), chunks.get(j).getNum()));
 						mg.addDeletedFile(header.getFile_id()+chunks.get(j).getNum());
-						// TODO service.bakupMetadata();
+						service.backupMetadata();
 						service.logAndShow("Chunk provided by hash was successfully deleted!");
 					}
 					else
