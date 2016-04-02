@@ -78,6 +78,7 @@ public class DeletePeer implements ProtocolProcessor {
 			{
 				utils.Files.removeFile(path);
 				mg.peerFilesInfo().remove(mg.peerChunkBackupInfo(file_hash, chunks.get(i).getNum()));
+				service.backupMetadata();
 				service.logAndShow("Chunk provided by path was successfully deleted!");
 			}
 			else

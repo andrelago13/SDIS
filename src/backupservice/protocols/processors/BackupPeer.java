@@ -15,11 +15,8 @@ import backupservice.protocols.Protocols;
 public class BackupPeer implements ProtocolProcessor {
 	
 	public static final int MAX_DELAY = 400;
-	public static final int WAIT_FOR_STORED_DELAY = 5000;
-	public static final int MAX_ATTEMPT = 1;
-	public static final int MAX_ACTIVE_TIME = 30000;
-	
-	// FIXME termina antes do suposto
+	public static final int WAIT_FOR_STORED_DELAY = 6000;
+	public static final int MAX_ATTEMPT = 2;
 	
 	private BackupService service;
 	private int sender_id;
@@ -47,7 +44,7 @@ public class BackupPeer implements ProtocolProcessor {
 		this.chunk_no = message_header.getChunk_no();
 		this.chunk_desired_replication = message_header.getReplication_deg();
 
-		generateDelay();
+		generateDelay(MAX_DELAY);
 		generateProtocolInstance();
 		responded_peers = new ArrayList<Integer>();
 	}
@@ -61,20 +58,44 @@ public class BackupPeer implements ProtocolProcessor {
 		        new java.util.TimerTask() {
 		            @Override
 		            public void run() {
-		                try {
-		                	service.sendControlSocket(reply.toString());
-						} catch (IOException e) {
-							e.printStackTrace();
-							service.logAndShowError("Unable to reply STORED");
-						}
+		            	if(BackupService.lastVersionActive()) {
+		            		if(responded_peers.size() < chunk_desired_replication) {
+			            		service.logAndShow("Actually storing chunk #" + chunk_no + " of file " + file_id + " for peer " + sender_id + ".");
+		            			try {
+		            				storeChunk();
+		            			} catch (IOException e) {
+		            				e.printStackTrace();
+		            				service.logAndShowError("Unable to store received chunk");
+		            				terminate();
+		            				return;
+		            			}
+			            		try {
+				                	service.sendControlSocket(reply.toString());
+								} catch (IOException e) {
+									e.printStackTrace();
+									service.logAndShowError("Unable to reply STORED");
+								}
+								service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size() + 1, chunk_content.length);
+								service.backupMetadata();
+		            		} else {
+		            			service.logAndShow("Chunk #" + chunk_no + " of file " + file_id + " of peer " + sender_id + " has enough copies. Discarding.");		            			
+		            		}
+		            	} else {
+		            		try {
+			                	service.sendControlSocket(reply.toString());
+							} catch (IOException e) {
+								e.printStackTrace();
+								service.logAndShowError("Unable to reply STORED");
+							}
+		            	}
 		            }
 		        }, 
 		        delay 
 		);
 	}
 	
-	public int generateDelay() {
-		answer_delay = rand.nextInt(MAX_DELAY + 1);
+	public int generateDelay(int max) {
+		answer_delay = rand.nextInt(max + 1);
 		return answer_delay;
 	}
 
@@ -92,27 +113,19 @@ public class BackupPeer implements ProtocolProcessor {
 		
 		if(header.getFile_id().equals(file_id) && header.getChunk_no() == chunk_no && header.getSender_id() != service.getIdentifier()) {
 			if(header.getMessage_type() == Protocols.MessageType.PUTCHUNK) {
-				if(BackupService.lastVersionActive()) {
-					if(stored) {
-						generateDelay();
-						replyWithDelay();
-					}					
-				} else {
-					generateDelay();
-					replyWithDelay();					
-				}
+				generateDelay(MAX_DELAY);
+				replyWithDelay();
 				return true;
 			} else if (header.getMessage_type() == Protocols.MessageType.STORED) {
 				int sender = header.getSender_id();
 				if(!responded_peers.contains(sender)) {
 					responded_peers.add(sender);
-					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size(), chunk_content.length);
-					try {
-						service.logAndShow("Backing up metadata");
-						service.getMetadata().backup();
-					} catch (IOException e) {
-						e.printStackTrace();
-						service.logAndShowError("Unable to backup metadata");
+					if(stored) {
+						service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size() + 1, chunk_content.length);
+						service.backupMetadata();
+					} else if(!BackupService.lastVersionActive()) {
+						service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size(), chunk_content.length);
+						service.backupMetadata();
 					}
 				}
 				return true;
@@ -132,50 +145,15 @@ public class BackupPeer implements ProtocolProcessor {
 			return;
 		
 		if(++attempt > MAX_ATTEMPT) {
-			if(BackupService.lastVersionActive()) {
-				if(responded_peers.size() >= chunk_desired_replication) {	// already has enough replication
-					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size(), chunk_content.length);
-					try {
-						service.logAndShow("Backing up metadata");
-						service.getMetadata().backup();
-					} catch (IOException e) {
-						e.printStackTrace();
-						service.logAndShowError("Unable to backup metadata");
-					}
-					terminate();
-				} else {
-					try {
-						storeChunk();
-					} catch (IOException e) {
-						e.printStackTrace();
-						service.logAndShowError("Unable to store received chunk");
-						terminate();
-						return;
-					}
-					generateDelay();
-					service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, responded_peers.size() + 1, chunk_content.length);
-					try {
-						service.logAndShow("Backing up metadata");
-						service.getMetadata().backup();
-					} catch (IOException e) {
-						e.printStackTrace();
-						service.logAndShowError("Unable to backup metadata");
-					}
-					replyWithDelay();	
-				}				
-			} else {
-				terminate();
-			}
+			service.logAndShow("Terminating backup of chunk #" + chunk_no + " of file " + file_id + " for peer " + sender_id + ". Last attempt reached.");	
+			terminate();
 		} else {
-			if(BackupService.lastVersionActive()) {
-				evalDelay(getEvalDelay());
+			if(responded_peers.size() == prev_replies) {
+				service.logAndShow("Terminating backup of chunk #" + chunk_no + " of file " + file_id + " for peer " + sender_id + ". No more peers receiving.");	
+				terminate();
 			} else {
-				if(responded_peers.size() == prev_replies) {
-					terminate();
-				} else {
-					prev_replies = responded_peers.size();
-					evalDelay(WAIT_FOR_STORED_DELAY);
-				}
+				prev_replies = responded_peers.size();
+				evalDelay(WAIT_FOR_STORED_DELAY);
 			}
 		}
 	}
@@ -198,16 +176,14 @@ public class BackupPeer implements ProtocolProcessor {
 	public void initiate() {
 		active = true;
 		
+		service.logAndShow("Initiating backup of chunk #" + chunk_no + " of file " + file_id + " for peer " + sender_id + ".");
+		
 		if(BackupService.lastVersionActive()) {
-			service.getTimer().schedule(new TimerTask() {
-
-				@Override
-				public void run() {
-					evalTimeout();
-				}
-				
-			}, MAX_ACTIVE_TIME);
-			evalDelay(getEvalDelay());	
+			generateDelay(MAX_DELAY);
+			/*service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, 0, chunk_content.length);
+			service.backupMetadata();*/
+			replyWithDelay();	
+			evalDelay(WAIT_FOR_STORED_DELAY);
 		} else {
 			try {
 				storeChunk();
@@ -217,26 +193,17 @@ public class BackupPeer implements ProtocolProcessor {
 				terminate();
 				return;
 			}
-			generateDelay();
+			generateDelay(MAX_DELAY);
 			service.getMetadata().updatePeerFile(file_id, chunk_no, chunk_desired_replication, 1, chunk_content.length);
-			try {
-				service.logAndShow("Backing up metadata");
-				service.getMetadata().backup();
-			} catch (IOException e) {
-				e.printStackTrace();
-				service.logAndShowError("Unable to backup metadata");
-			}
+			service.backupMetadata();
 			replyWithDelay();	
 			evalDelay(WAIT_FOR_STORED_DELAY);			
 		}
 	}
-	
-	private void evalTimeout() {
-		terminate();
-	}
 
 	@Override
 	public void terminate() {
+		service.logAndShow("Terminated backup of chunk #" + chunk_no + " of file " + file_id + " for peer " + sender_id + ".");
 		active = false;
 		service.removeProcessor(this);
 	}
@@ -256,7 +223,4 @@ public class BackupPeer implements ProtocolProcessor {
 		return BackupService.BACKUP_FILE_PATH + "/" + service.getIdentifier() + "/" + file_id + "_" + chunk_no;
 	}
 
-	private int getEvalDelay() {
-		return rand.nextInt(WAIT_FOR_STORED_DELAY);
-	}
 }

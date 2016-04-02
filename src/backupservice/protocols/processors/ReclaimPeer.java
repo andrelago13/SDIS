@@ -68,13 +68,7 @@ public class ReclaimPeer implements ProtocolProcessor {
 			// unsuccessful
 			service.logAndShow("Unable to decrease actual replication of chunk #" + chunk_num + " of file " + file_hash + ". File is not present in the system.");
 		}
-		try {
-			service.logAndShow("Backing up metadata");
-			service.getMetadata().backup();
-		} catch (IOException e) {
-			e.printStackTrace();
-			service.logAndShowError("Unable to backup metadata");
-		}
+		service.backupMetadata();
 		
 		ChunkBackupInfo chunk = service.getMetadata().peerChunkBackupInfo(file_hash, chunk_num);
 		
