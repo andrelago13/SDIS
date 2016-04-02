@@ -333,5 +333,25 @@ public class MetadataManager implements Serializable {
 			deleted_peer_files.add(hash);
 		}
 	}
+
+	public ArrayList<String> getPeerFilesHashes(ArrayList<FileBackupInfo> p)
+	{
+		ArrayList<String> peerFilesHashes = new ArrayList<String>();
+		for(int i = 0; i < p.size(); ++i)
+			peerFilesHashes.add(p.get(i).getHash());
+	
+		return peerFilesHashes;
+	}
+	
+	public ArrayList<ChunkBackupInfo> getpeerChunks(String file_hash)
+	{
+		ArrayList<ChunkBackupInfo> chunks = null;
+		for(int i = 0; i < peerFilesInfo().size();++i)
+			if(peerFilesInfo().get(i).getHash().equals(file_hash))
+				chunks = peerFilesInfo().get(i).getChunks();
+		
+		return chunks;
+	}
+	
 	
 }

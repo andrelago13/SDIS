@@ -160,6 +160,8 @@ public class DeleteInitiator implements ProtocolProcessor {
 				utils.Files.removeFile(pathFile);
 				// Remove file from metadata
 				mg.ownFilesInfo().remove(mg.ownFileBackupInfo_path(pathFile));
+				// Add fileHash to deleted files
+				mg.addDeletedFile(fileHash);
 				service.logAndShow("File provided by filePath was successfully deleted!");
 				return true;
 			}
