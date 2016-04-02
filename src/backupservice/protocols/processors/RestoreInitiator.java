@@ -145,20 +145,6 @@ public class RestoreInitiator implements ProtocolProcessor {
 		
 		return false;
 	}
-
-	private void handleTCP(String message) {
-		ProtocolInstance instance_tcp = Protocols.parseMessage(message);
-		if(instance_tcp != null) {
-			for(int i = 0; i < restorers.size(); ++i) {
-				if(restorers.get(i).interested(instance_tcp)) {
-					restorers.get(i).handleTCP(instance_tcp);
-					return;
-				}
-			}
-		}
-		// TODO
-		//System.out.println(message);
-	}
 	
 	@Override
 	public Boolean active() {

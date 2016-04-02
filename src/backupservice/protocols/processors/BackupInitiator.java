@@ -5,7 +5,6 @@ import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-import network.MulticastSocketWrapper;
 import network.SocketWrapper;
 import filesystem.FileChunk;
 import filesystem.FileManager;
@@ -34,6 +33,8 @@ public class BackupInitiator implements ProtocolProcessor {
 	private Boolean active = false;
 	
 	private Socket response_socket = null;
+	Boolean one_has_failed = false;
+	private ArrayList<Integer> terminated_senders = new ArrayList<Integer>();
 	
 	private ArrayList<ChunkSender> senders = null;
 	
@@ -96,27 +97,14 @@ public class BackupInitiator implements ProtocolProcessor {
 			
 			if(current_attempt == 4) {
 				service.logAndShow("Ending backup chunk #" + chunk.getchunkNum() + ", file " + split_file.getFileId() + " (rep deg achieved " + responded_peers.size() + ", attempt " + current_attempt + ")");
-				if(response_socket != null) {
-					try {
-						SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.NOT_ENOUGH_REPLICATION.ordinal()]);
-					} catch (IOException e) {
-						e.printStackTrace();
-						service.logAndShowError("Unable to confirm conditional success to TCP client.");
-					}
-				}
-				terminate();
+				one_has_failed = true;
+				terminated_senders.add(this.chunk.getchunkNum());
+				senderEnded();
 			} else {
 				if(responded_peers.size() >= replication_deg) {
 					service.logAndShow("Ending backup of chunk #" + chunk.getchunkNum() + ", file " + split_file.getFileId() + " (rep deg achieved " + responded_peers.size() + ", attempt " + current_attempt + ")");
-					if(response_socket != null) {
-						try {
-							SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.SUCCESS.ordinal()]);
-						} catch (IOException e) {
-							e.printStackTrace();
-							service.logAndShowError("Unable to confirm success to TCP client.");
-						}
-					}
-					terminate();
+					terminated_senders.add(this.chunk.getchunkNum());
+					senderEnded();
 				} else {
 					++current_attempt;
 					run();					
@@ -134,13 +122,7 @@ public class BackupInitiator implements ProtocolProcessor {
 			if(!responded_peers.contains(peer_id)) {
 				responded_peers.add(peer_id);
 				service.getMetadata().updateOwnFile(file_path, split_file.getFileId(), chunk.getchunkNum(), chunk.getreplicationNumber(), responded_peers.size(), chunk.getchunkContent().length);
-				try {
-					service.logAndShow("Backing up metadata");
-					service.getMetadata().backup();
-				} catch (IOException e) {
-					e.printStackTrace();
-					service.logAndShowError("Unable to backup metadata");
-				}
+				service.backupMetadata();
 			}
 		}
 		
@@ -188,6 +170,33 @@ public class BackupInitiator implements ProtocolProcessor {
 		return false;
 	}
 	
+	public void senderEnded() {
+		if(senders.size() == terminated_senders.size()) {
+			if(one_has_failed) {
+				service.logAndShowError("File backup error. Not enough replication achieved in at least one chunk.");
+				if(response_socket != null) {
+					try {
+						SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.NOT_ENOUGH_REPLICATION.ordinal()]);
+					} catch (IOException e) {
+						e.printStackTrace();
+						service.logAndShowError("Unable to confirm conditional success to TCP client.");
+					}	
+				}				
+			} else {
+				service.logAndShow("File \"" + file_path + "\" backup successful!");
+				if(response_socket != null) {
+					try {
+						SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.SUCCESS.ordinal()]);
+					} catch (IOException e) {
+						e.printStackTrace();
+						service.logAndShowError("Unable to confirm success to TCP client.");
+					}
+				}
+			}
+			terminate();
+		}
+	}
+	
 	public void initiate() {
 
 		SplitFile split_file = null;
@@ -225,12 +234,23 @@ public class BackupInitiator implements ProtocolProcessor {
 		active = true;
 		
 		for(int i = 0; i < senders.size(); ++i) {
+			if(!active)
+				break;
 			senders.get(i).start();
 		}
 	}
 	
 	public void terminate() {
 		active = false;
+		
+		if(response_socket != null) {
+			try {
+				response_socket.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
 		
 		for(int i = 0; i < senders.size(); ++i) {
 			try {
