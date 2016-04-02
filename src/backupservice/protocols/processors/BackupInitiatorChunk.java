@@ -48,7 +48,7 @@ public class BackupInitiatorChunk implements ProtocolProcessor {
 			
 			byte[] packet_bytes = instance.toBytes();
 			try {
-				service.sendBackupSocket(new String(packet_bytes, 0, packet_bytes.length));
+				service.sendBackupSocket(packet_bytes, packet_bytes.length);
 			} catch (IOException e1) {
 				service.logAndShowError("Unable to reach multicast");
 			}

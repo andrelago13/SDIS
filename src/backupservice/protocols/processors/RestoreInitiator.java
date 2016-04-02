@@ -3,6 +3,7 @@ package backupservice.protocols.processors;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -70,7 +71,8 @@ public class RestoreInitiator implements ProtocolProcessor {
 		public void sendCommand() {
 			service.logAndShow("RESTORE chunk #" + chunk_no + ", file " + file_hash + ".");
 			try {
-				service.sendControlSocket(reply.toString());
+				byte[] buffer = reply.toBytes();
+				service.sendControlSocket(buffer, buffer.length);
 			} catch (IOException e) {
 				e.printStackTrace();
 				service.logAndShowError("Unable to send GETCHUNK, CONTROL channel not reachable.");
@@ -246,13 +248,13 @@ public class RestoreInitiator implements ProtocolProcessor {
 				}
 				file.createNewFile();
 
-				PrintWriter out_writer = new PrintWriter(new BufferedWriter(new FileWriter(file_path,false)));
+				FileOutputStream fos = new FileOutputStream(file_path);
 				
 				for(int i = 0; i < received_chunks.size(); ++i) {
-					byte[] content = received_chunks.get(i).getchunkContent();
-					out_writer.print(new String(content, 0, content.length));
+					fos.write(received_chunks.get(i).getchunkContent());
 				}
-				out_writer.close();
+				
+				fos.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 				service.logAndShowError("Unable to merge file chunks received.");

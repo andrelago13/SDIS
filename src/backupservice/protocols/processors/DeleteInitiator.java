@@ -84,7 +84,8 @@ public class DeleteInitiator implements ProtocolProcessor {
 		service.show("File Hash to be deleted: " + Hash);
 		ProtocolInstance instance = Protocols.deleteProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
 				service.getIdentifier(), Hash);
-		service.sendControlSocket(instance.toString());
+		byte[] buffer = instance.toBytes();
+		service.sendControlSocket(buffer, buffer.length);
 	}
 
 

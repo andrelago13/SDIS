@@ -62,9 +62,10 @@ public class BackupInitiator implements ProtocolProcessor {
 			
 			byte[] packet_bytes = instance.toBytes();
 			try {
-				service.sendBackupSocket(new String(packet_bytes, 0, packet_bytes.length));
+				service.sendBackupSocket(packet_bytes, packet_bytes.length);
 			} catch (IOException e1) {
 				e1.printStackTrace();
+				service.logAndShowError("Multicast address not reachable.");
 				try {
 					if(response_socket != null)
 						SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.MULTICAST_NOT_REACHABLE.ordinal()]);
@@ -205,6 +206,7 @@ public class BackupInitiator implements ProtocolProcessor {
 			split_file = FileManager.splitFile(file_path, service.getIdentifier() ,replication_deg, Protocols.MAX_PACKET_LENGTH);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
+			service.logAndShowError("Hash generation error.");
 			try {
 				if(response_socket != null)
 					SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.HASH_FAILURE.ordinal()]);
@@ -214,8 +216,8 @@ public class BackupInitiator implements ProtocolProcessor {
 			terminate();
 			return;
 		} catch (IOException e) {
-			// TODO mensagens
 			e.printStackTrace();
+			service.logAndShowError("File system error (file unreachable).");
 			try {
 				if(response_socket != null)
 					SocketWrapper.sendTCP(response_socket, condition_codes[EndCondition.FILE_NOT_REACHABLE.ordinal()]);
@@ -247,8 +249,8 @@ public class BackupInitiator implements ProtocolProcessor {
 			try {
 				response_socket.close();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
+				service.logAndShowError("Unable to close response socket.");
 			}
 		}
 		

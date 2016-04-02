@@ -16,7 +16,7 @@ import backupservice.protocols.Protocols;
 
 public class RestorePeer implements ProtocolProcessor {
 	
-	// TODO enhancement enviar diretamente apenas para o emissor
+	// TODO enhancement enviar diretamente apenas para o emissor se for lastVersion
 	
 	public final static int MAX_DELAY = 400;
 	
@@ -75,8 +75,6 @@ public class RestorePeer implements ProtocolProcessor {
 	@Override
 	public void initiate() {
 		
-		// TODO enhancement if sender is 2.3, send to private socket immediately
-		
 		ChunkBackupInfo chunk = service.getMetadata().peerChunkBackupInfo(file_hash, chunk_no);
 		if(chunk == null) {
 			service.logAndShow("Chunk #" + chunk_no + " of file " + file_hash + "requested by peer " + sender_id + " is not present in this peer. Terminating.");
@@ -130,7 +128,8 @@ public class RestorePeer implements ProtocolProcessor {
 	private void sendChunk() {
 		if(instance != null) {
 			try {
-				service.sendRestoreSocket(instance.toString());
+				byte[] buffer = instance.toBytes();
+				service.sendRestoreSocket(buffer, buffer.length);
 			} catch (IOException e) {
 				e.printStackTrace();
 				service.logAndShowError("Unable to send CHUNK instance of chunk #" + chunk_no + " of file " + file_hash + "requested by peer " + sender_id + ". Terminating.");
