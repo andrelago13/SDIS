@@ -44,11 +44,13 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	private MulticastSocketWrapper socket_backup = null;
 	private MulticastSocketWrapper socket_restore = null;
 	private ServerSocket own_socket = null;
+	private DatagramSocketWrapper socket_private_data = null;
 	
 	private ResponseGetterThread control_receiver_thread = null;
 	private ResponseGetterThread backup_receiver_thread = null;
 	private ResponseGetterThread restore_receiver_thread = null;
 	private ResponseGetterThread command_receiver_thread = null;
+	private ResponseGetterThread private_data_thread = null;
 	private Timer timer = null;
 	
 	private ArrayList<ProtocolProcessor> processors = null;
@@ -126,6 +128,9 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 	
 	private void initiateOwnSocket() throws IOException {
 		own_socket = new ServerSocket(START_SOCKET_NO + identifier);
+		if(lastVersionActive()) {
+			socket_private_data = new DatagramSocketWrapper(START_SOCKET_NO_PRIVATE_DATA + identifier);
+		}
 	}
 	
 	public int getIdentifier() {
@@ -156,12 +161,18 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		backup_receiver_thread = socket_backup.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
 		restore_receiver_thread = socket_restore.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH+200);
 		command_receiver_thread = new ResponseGetterThread(this, this, own_socket, false, true);
+		if(lastVersionActive()) {
+			private_data_thread = socket_private_data.multipleUsageResponseThread(this, this, Protocols.MAX_PACKET_LENGTH + 200);
+		}
 		
 		// START RUNNING THREADS
 		control_receiver_thread.start();
 		backup_receiver_thread.start();
 		restore_receiver_thread.start();
 		command_receiver_thread.start();
+		if(lastVersionActive()) {
+			private_data_thread.start();
+		}
 		
 		try {
 			logAndShow("Listening for commands at " + InetAddress.getLocalHost().getHostAddress() + ":" + own_socket.getLocalPort());
@@ -171,6 +182,13 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		logAndShow("CONTROL channel started at " + socket_control.getGroup().getHostAddress() + ":" + socket_control.getLocalPort());
 		logAndShow("BACKUP channel started at " + socket_backup.getGroup().getHostAddress() + ":" + socket_backup.getLocalPort());
 		logAndShow("RESTORE channel started at " + socket_restore.getGroup().getHostAddress() + ":" + socket_restore.getLocalPort());
+		if(lastVersionActive()) {
+			try {
+				logAndShow("Private data channel started at " + InetAddress.getLocalHost().getHostAddress() + ":" + socket_private_data.getLocalPort());
+			} catch (UnknownHostException e) {
+				logAndShow("Private data channel started at localhost:" + socket_private_data.getLocalPort());
+			}
+		}
 
 		logAndShow("Backup Service initialized (" + metadata.getBackupSize() + " Bytes taken).");
 	}
@@ -257,6 +275,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			logAndShow("MDB IN: \"" + new String(response.getData(), 0, response.getLength()) + "\".");
 		} else if(sender == restore_receiver_thread) {
 			logAndShow("MDR IN: \"" + new String(response.getData(), 0, response.getLength()) + "\".");
+		} else if(sender == private_data_thread) {
+			logAndShow("Private Data IN: \"" + new String(response.getData(), 0, response.getLength()) + "\".");
 		} else {
 			logAndShow("Unknown UDP channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");			
 		}
@@ -331,6 +351,8 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			logAndShow("Own message received, ignoring...");
 			return;
 		}
+		
+		// TODO if message belongs to new protocol, ignore
 		
 		for(int i = 0; i < processors.size(); ++i) {
 			if(processors.get(i).handle(response_instance)) {
@@ -427,6 +449,11 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		this.socket_restore.send(message);
 	}
 
+	public void sendPrivateData(String message, String address, int port) throws IOException {
+		logAndShow("Private Data OUT: " + message);
+		this.socket_private_data.send(message.getBytes(), message.length(), address, port);
+	}
+	
 	public void backupMetadata() {
 		if(metadata != null) {
 			try {
