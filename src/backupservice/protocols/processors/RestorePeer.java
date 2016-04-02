@@ -16,7 +16,7 @@ import backupservice.protocols.Protocols;
 
 public class RestorePeer implements ProtocolProcessor {
 	
-	// TODO enhancement enviar diretamente apenas para o emissor
+	// TODO enhancement enviar diretamente apenas para o emissor se for lastVersion
 	
 	public final static int MAX_DELAY = 400;
 	
@@ -74,8 +74,6 @@ public class RestorePeer implements ProtocolProcessor {
 
 	@Override
 	public void initiate() {
-		
-		// TODO enhancement if sender is 2.3, send to private socket immediately
 		
 		ChunkBackupInfo chunk = service.getMetadata().peerChunkBackupInfo(file_hash, chunk_no);
 		if(chunk == null) {
