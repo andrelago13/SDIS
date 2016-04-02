@@ -122,13 +122,7 @@ public class BackupInitiator implements ProtocolProcessor {
 			if(!responded_peers.contains(peer_id)) {
 				responded_peers.add(peer_id);
 				service.getMetadata().updateOwnFile(file_path, split_file.getFileId(), chunk.getchunkNum(), chunk.getreplicationNumber(), responded_peers.size(), chunk.getchunkContent().length);
-				try {
-					service.logAndShow("Backing up metadata");
-					service.getMetadata().backup();
-				} catch (IOException e) {
-					e.printStackTrace();
-					service.logAndShowError("Unable to backup metadata");
-				}
+				service.backupMetadata();
 			}
 		}
 		

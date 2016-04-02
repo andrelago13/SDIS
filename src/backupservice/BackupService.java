@@ -426,4 +426,15 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		logAndShow("MDR OUT: " + message);
 		this.socket_restore.send(message);
 	}
+
+	public void backupMetadata() {
+		if(metadata != null) {
+			try {
+				metadata.backup();
+			} catch (IOException e) {
+				e.printStackTrace();
+				logAndShowError("Unable to backup metadata");
+			}
+		}
+	}
 }

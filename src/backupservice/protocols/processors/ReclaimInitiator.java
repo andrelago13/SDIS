@@ -132,13 +132,7 @@ public class ReclaimInitiator implements ProtocolProcessor {
 	
 	public void removeChunk(ChunkBackupInfo chunk) {
 		metadata.removeChunk(chunk);
-		try {
-			service.logAndShow("Backing up metadata");
-			service.getMetadata().backup();
-		} catch (IOException e) {
-			e.printStackTrace();
-			service.logAndShowError("Unable to backup metadata");
-		}
+		service.backupMetadata();
 		String path = BackupService.BACKUP_FILE_PATH + service.getIdentifier() + "/" + chunk.getFileHash() + "_" + chunk.getNum();
 		File file = new File(path);
 		file.delete();
