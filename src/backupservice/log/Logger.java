@@ -90,7 +90,6 @@ public class Logger {
 	}
 	
 	public void appendLog(String log) {
-		// TODO maybe switch to thread later
     	out_writer.println(log);
     	out_writer.flush();
     	

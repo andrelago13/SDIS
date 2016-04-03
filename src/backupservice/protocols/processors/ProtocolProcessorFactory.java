@@ -10,7 +10,7 @@ import backupservice.protocols.ProtocolInstance;
 public abstract class ProtocolProcessorFactory {
 
 	// Returns null if no processor should be launched
-	public static ProtocolProcessor getProcessor(ProtocolInstance message, BackupService service, String sender_address) {
+	public static ProtocolProcessor getProcessor(ProtocolInstance message, BackupService service, String sender_address, int sender_port) {
 		
 		ProtocolHeader header = message.getHeader();
 		 
@@ -22,7 +22,7 @@ public abstract class ProtocolProcessorFactory {
 			break;
 		case GETCHUNK:
 			if(header.getSender_id() != service.getIdentifier()) {
-				return new RestorePeer(service, header.getSender_id(), header.getFile_id(), header.getChunk_no(), header.getVersion_major(), header.getVersion_minor(), sender_address);
+				return new RestorePeer(service, header.getSender_id(), header.getFile_id(), header.getChunk_no(), header.getVersion_major(), header.getVersion_minor(), sender_address, sender_port);
 			}
 			break;
 		case DELETE:

@@ -308,7 +308,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			logAndShow("Unknown UDP channel received \"" + new String(response.getData(), 0, response.getLength()) + "\".");			
 		}
 		
-		handleCommand(sender, new String(response.getData(), 0, response.getLength()), response.getData(), response.getLength(), response.getAddress().toString());
+		handleCommand(sender, new String(response.getData(), 0, response.getLength()), response.getData(), response.getLength(), response.getAddress().toString(), response.getPort());
 	}
 
 	@Override
@@ -360,7 +360,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		}
 	}
 
-	private void handleCommand(ResponseGetterThread sender, String response, byte[] response_bytes, int response_length, String sender_addr) {
+	private void handleCommand(ResponseGetterThread sender, String response, byte[] response_bytes, int response_length, String sender_addr, int sender_port) {
 		Boolean handled = false;
 		ProtocolInstance response_instance = null;
 		try {
@@ -388,7 +388,7 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			}
 		}
 		if(!handled) {
-			ProtocolProcessor processor = ProtocolProcessorFactory.getProcessor(response_instance, this, sender_addr);
+			ProtocolProcessor processor = ProtocolProcessorFactory.getProcessor(response_instance, this, sender_addr, sender_port);
 			if(processor != null) {
 				logAndShow("Message received will be handled by a new processor.");
 				addProcessor(processor);
@@ -458,6 +458,10 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 
 	public static Boolean lastVersionActive() {
 		return Protocols.versionMajor() == CURRENT_VERSION_MAJOR && Protocols.versionMinor() == CURRENT_VERSION_MINOR;
+	}
+	
+	public static Boolean isLastVersion(int major, int minor) {
+		return major == CURRENT_VERSION_MAJOR && minor == CURRENT_VERSION_MINOR;
 	}
 
 	public void sendControlSocket(byte[] message, int length) throws IOException {

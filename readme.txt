@@ -31,6 +31,9 @@ To run the TestApp:
 		sub-protocol – can be BACKUP, RESTORE, RECLAIM, DELETE or EXIT
 		opnd_1 – path name of the file or amount of space to be reclaim
 		opnd_2 – specifies the desired replication degree. Applies only to backup sub-protocol
+		
+	IMPORTANT NOTE: since the specification did not specify wether the RECLAIM protocol argument should be the ammount of bytes to "clear" or the maximmum total backup size, we established that it should be the second, which means, using "RESTORE 3000" in the TestApp guarantees that the system doesn't have more than 3000 bytes of files backed up for other peers
+
 
 Description of local files created by the peer application:
 	- backups  -> Saves every backup related to peers. The chunks are stored under a folder identified by peer unique identifier.
