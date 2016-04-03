@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Timer;
+import java.util.TimerTask;
 
 import filesystem.metadata.MetadataManager;
 import backupservice.cli.CLIProtocolInstance;
@@ -17,6 +18,7 @@ import backupservice.log.Logger;
 import backupservice.log.LoggerInterface;
 import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
+import backupservice.protocols.processors.DeleteInitiatorCheck;
 import backupservice.protocols.processors.ProtocolProcessor;
 import backupservice.protocols.processors.ProtocolProcessorFactory;
 import network.Communicator;
@@ -192,6 +194,19 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 		}
 
 		logAndShow("Backup Service initialized (" + metadata.getBackupSize() + " Bytes taken).");
+		
+		// If latest version, use files deleted check
+		if(lastVersionActive()) {
+			final BackupService this_t = this;
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					DeleteInitiatorCheck checker = new DeleteInitiatorCheck(this_t);
+					addProcessor(checker);
+					checker.initiate();
+				}
+			}, 100);
+		}
 	}
 
 	public void terminate() {
@@ -227,6 +242,13 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 				// do nothing
 			}
 		}
+		if(private_data_thread != null) {
+			try{
+				private_data_thread.interrupt();				
+			} catch (Exception e) {
+				// do nothing
+			}
+		}
 		
 		try {
 			socket_control.dispose();
@@ -252,8 +274,11 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			e.printStackTrace();
 			logAndShowError("Unable to dispose of COMMAND channel socket.");
 		}
+		if(lastVersionActive()) {
+			socket_private_data.close();
+		}
 		
-		System.out.println(processors.size());
+		logAndShow("" + processors.size() + " processors terminated.");
 		for(int i = 0; i < processors.size(); ++i) {
 			processors.get(i).terminate();
 		}

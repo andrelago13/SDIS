@@ -227,7 +227,8 @@ public class MetadataManager implements Serializable {
 	public FileBackupInfo ownFileBackupInfo_path(String file_path) {
 		for(int i = 0; i < own_files.size(); ++i) {
 			FileBackupInfo info = own_files.get(i);
-			if(info.getFilePath() != null && info.getFilePath().equals(file_path)) {
+			if(info.getFilePath() != null && 
+					info.getFilePath().equals(file_path)) {
 				return info;
 			}
 		}
@@ -353,5 +354,30 @@ public class MetadataManager implements Serializable {
 		return chunks;
 	}
 	
+	public int deletePeerFile(String file_hash) {
+		int found = 0;
+		
+		for(int i = 0; i < peer_files.size(); ++i) {
+			if(peer_files.get(i).getHash().equals(file_hash)) {
+				peer_files.remove(i);
+				++found;
+				--i;
+			}
+		}
+		return found;
+	}
 	
+	public Boolean deleteOwnFile(String file_path) {
+		Boolean found = false;
+		
+		for(int i = 0; i < own_files.size(); ++i) {
+			if(own_files.get(i).getFilePath().equals(file_path)) {
+				own_files.remove(i);
+				--i;
+				found = true;
+			}
+		}
+		
+		return found;
+	}
 }

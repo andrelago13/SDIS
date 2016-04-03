@@ -34,20 +34,22 @@ public class DeletePeerCheck implements ProtocolProcessor {
 		this.service = service;
 		this.hash = hash;
 		this.responseSocket = response_socket;
+		this.random = new Random();
 	}
 
 	@Override
 	public void initiate() {
-
 		service.logAndShow("Starting DeletePeerCheck...");
+		
+		active = true;
 
 		mg = service.getMetadata();
 		ArrayList<String> deletedFiles = mg.getDeletedPeerFiles();
 
-		if(deletedFiles.contains(hash))
-			startDelayedResponse();			
-
-		terminate();
+		if(deletedFiles.contains(hash)) {
+			generateDelay();
+			startDelayedResponse();		
+		}
 	}
 
 	private void generateDelay() {
@@ -61,6 +63,7 @@ public class DeletePeerCheck implements ProtocolProcessor {
 				new java.util.TimerTask() {
 					@Override
 					public void run() {
+						System.out.println("EVAL");
 						eval();
 					}
 				}, 
@@ -77,18 +80,21 @@ public class DeletePeerCheck implements ProtocolProcessor {
 		} catch (IOException e) {
 			service.logAndShow("Unable to notify peers with WASDELETED message!");
 		}	
+
+		terminate();
 	}
 
-	public void notifyDeleteCheck(String Hash) throws IOException
+	public void notifyDeleteCheck(String hash) throws IOException
 	{
 		ProtocolInstance instance = Protocols.wasdeletedProtocolInstance(Protocols.versionMajor(), Protocols.versionMinor(),
-				service.getIdentifier(), Hash);
+				service.getIdentifier(), hash);
 		byte[] buffer = instance.toBytes();
 		service.sendControlSocket(buffer, buffer.length);
 	}
 
 	@Override
 	public void terminate() {
+		service.logAndShow("Terminating DeletePeerCheck.");
 		active = false;
 		service.removeProcessor(this);	
 	}

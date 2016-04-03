@@ -153,21 +153,24 @@ public class DeleteInitiator implements ProtocolProcessor {
 
 	public Boolean deleteFile(MetadataManager mg, String pathFile)
 	{
-		if(mg.ownFileBackupInfo_path(pathFile) != null)
+		System.out.println(pathFile);
+		while(mg.ownFileBackupInfo_path(pathFile) != null) {
 			if(utils.Files.fileValid(pathFile))
 			{
 				fileHash = mg.ownFileBackupInfo_path(filePath).getHash();
 				// Remove file
 				utils.Files.removeFile(pathFile);
 				// Remove file from metadata
-				mg.ownFilesInfo().remove(mg.ownFileBackupInfo_path(pathFile));
+				service.getMetadata().deleteOwnFile(pathFile);
+				//mg.ownFilesInfo().remove(mg.ownFileBackupInfo_path(pathFile));
 				// Add fileHash to deleted files
-				mg.addDeletedFile(fileHash);
+				service.getMetadata().addDeletedFile(fileHash);
 				service.backupMetadata();
 				service.logAndShow("File provided by filePath was successfully deleted!");
 				return true;
 			}
+		}
 
-		return false;			
+		return true;			
 	}
 }

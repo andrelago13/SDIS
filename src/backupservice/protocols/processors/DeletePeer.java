@@ -40,14 +40,20 @@ public class DeletePeer implements ProtocolProcessor {
 
 		mg = service.getMetadata();
 		
-		FileBackupInfo peerFile =  mg.peerFileBackupInfo(file_hash);
-		
-		if(checkpeerFile(peerFile)) {
-			ArrayList<ChunkBackupInfo> chunks = peerFile.getChunks();
-			eraseChuncksFromFile(chunks);
-			service.logAndShow("Ending DeletePeer...");
-			terminate();
+		while(true) {
+			FileBackupInfo peerFile =  mg.peerFileBackupInfo(file_hash);
+
+			if(checkpeerFile(peerFile)) {
+				ArrayList<ChunkBackupInfo> chunks = peerFile.getChunks();
+				if(!eraseChuncksFromFile(chunks)) {
+					break;
+				}
+				//service.logAndShow("Ending DeletePeer...");
+			} else{
+				break;
+			}
 		}
+		terminate();
 	}
 
 	@Override
@@ -66,7 +72,7 @@ public class DeletePeer implements ProtocolProcessor {
 		return true;
 	}
 	
-	public void eraseChuncksFromFile(ArrayList<ChunkBackupInfo> chunks)
+	public Boolean eraseChuncksFromFile(ArrayList<ChunkBackupInfo> chunks)
 	{
 		service.show("Prepare to remove chunk!");
 
@@ -77,8 +83,9 @@ public class DeletePeer implements ProtocolProcessor {
 			if(utils.Files.fileValid(path))
 			{
 				utils.Files.removeFile(path);
-				mg.peerFilesInfo().remove(mg.peerChunkBackupInfo(file_hash, chunks.get(i).getNum()));
-				mg.addDeletedFile(file_hash);
+				service.getMetadata().deletePeerFile(file_hash);
+				//mg.peerFilesInfo().remove(mg.peerChunkBackupInfo(file_hash, chunks.get(i).getNum()));
+				service.getMetadata().addDeletedFile(file_hash);
 				service.backupMetadata();
 				service.logAndShow("Chunk provided by path was successfully deleted!");
 			}
@@ -86,10 +93,12 @@ public class DeletePeer implements ProtocolProcessor {
 			{
 				service.logAndShowError("Chunk does not exist. Terminating.");
 				terminate();
-				return;
+				return false;
 			}
 			active = true;
 		}
+		
+		return true;
 	}
 
 }
