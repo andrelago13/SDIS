@@ -8,9 +8,9 @@ import backupservice.BackupService;
 public class BackupServiceCLI {
 
 	public static void main(String[] args) {
-		if(args == null || args.length != 5) {
+		if(args == null || args.length != 8) {
 			System.out.println("" + '\n' + '\t' + "=====> BackupService Command Line Interface <=====" + '\n');
-			System.out.println("Usage: java BackupServiceCLI <peer_id> <mc_addr>:<mc_port> <mdb_addr>:<mdb_port> <mdr_addr>:<mdr_port> <enhanced_mode>");
+			System.out.println("Usage: java BackupServiceCLI <peer_id> <mc_addr> <mc_port> <mdb_addr> <mdb_port> <mdr_addr> <mdr_port> <enhanced_mode>");
 			System.out.println('\t' + "<peer_id> - Integer representing the peer's unique identifier.");
 			System.out.println('\t' + "<mc_addr> - IP address of the CONTROL channel");
 			System.out.println('\t' + "<mc_port> - port for the CONTROL channel");
@@ -32,18 +32,16 @@ public class BackupServiceCLI {
 			
 			try {
 				id = Integer.parseInt(args[0]);
-				String[] mc_split = args[1].split(":");
-				String[] mdb_split = args[2].split(":");
-				String[] mdr_split = args[3].split(":");
-				int enhanced_mode_int = Integer.parseInt(args[4]);
-				enhanced_mode = (enhanced_mode_int == 1);
 
-				mc_address = mc_split[0];
-				mc_port = Integer.parseInt(mc_split[1]);
-				mdb_address = mdb_split[0];
-				mdb_port = Integer.parseInt(mdb_split[1]);
-				mdr_address = mdr_split[0];
-				mdr_port = Integer.parseInt(mdr_split[1]);
+				mc_address = args[1];
+				mc_port = Integer.parseInt(args[2]);
+				mdb_address = args[3];
+				mdb_port = Integer.parseInt(args[4]);
+				mdr_address = args[5];
+				mdr_port = Integer.parseInt(args[6]);
+				
+				int enhanced_mode_int = Integer.parseInt(args[7]);
+				enhanced_mode = (enhanced_mode_int == 1);
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.out.println("Invalid arguments. Expected \"<peer_id> <mc_address>:<mc_port> <mdb_address>:<mdb_port> <mdr_address>:<mdr_port> <0/1 - enhanced mode off/on>\".");
