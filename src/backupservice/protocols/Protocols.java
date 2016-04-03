@@ -50,7 +50,10 @@ public class Protocols {
 		
 		// File Deletion Enhancements
 		EXISTS,
-		WASDELETED
+		WASDELETED,
+		
+		// File Reclaim Enhancements
+		PUTCHUNKENH
 
 	}
 	
@@ -95,6 +98,12 @@ public class Protocols {
 	public static ProtocolInstance wasdeletedProtocolInstance(int version_major, int version_minor, int sender_id, String file_id) throws IllegalArgumentException {
 		ProtocolHeader header = new ProtocolHeader(MessageType.WASDELETED, version_major, version_minor, sender_id, file_id);
 		return new ProtocolInstance(header);
+	}
+	
+	public static ProtocolInstance putChunkEnhProtocolInstance(int version_major, int version_minor, int sender_id, String file_id, int chunk_no, int replication_deg, byte[] content) throws IllegalArgumentException {
+		ProtocolHeader header = new ProtocolHeader(MessageType.PUTCHUNKENH, version_major, version_minor, sender_id, file_id, chunk_no, replication_deg);
+		ProtocolBody body = new ProtocolBody(content);
+		return new ProtocolInstance(header, body);
 	}
 
 	public static ProtocolInstance parseMessage(String message, byte[] message_buffer, int message_length) throws IllegalArgumentException {
@@ -200,6 +209,21 @@ public class Protocols {
 			ProtocolHeader header = new ProtocolHeader(MessageType.WASDELETED, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(header_split[2]), header_split[3]);			
 		
 			return new ProtocolInstance(header);			
+		} else if(message_type.equals(MessageType.PUTCHUNKENH.toString())) {
+			if(header_split.length != 6)
+				throw new IllegalArgumentException("Invalid message buffer (PUTCHUNKENH expects 5 aditional tokens).");
+			
+			String[] version_tokens = header_split[1].split("\\.");
+			
+			if(temp.length < 3) {
+				throw new IllegalArgumentException("Invalid message buffer (no body found).");				
+			}
+			
+			ProtocolHeader header = new ProtocolHeader(MessageType.PUTCHUNKENH, Integer.parseInt(version_tokens[0]), Integer.parseInt(version_tokens[1]), Integer.parseInt(header_split[2]), header_split[3], Integer.parseInt(header_split[4]), Integer.parseInt(header_split[5]));
+			int start = message_str.indexOf(LINE_SEPARATOR) + 2*LINE_SEPARATOR.length();
+			ProtocolBody body = new ProtocolBody(Arrays.copyOfRange(message_buffer, start, message_length));
+			
+			return new ProtocolInstance(header, body);
 		}
 		
 		return null;

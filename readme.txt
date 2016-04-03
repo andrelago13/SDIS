@@ -9,7 +9,7 @@ To compile in WINDOWS:
 To run the peer:
 	- navigate to the project's "bin" folder
 	- open a terminal in that directory and type the following command:
-		"java backupservice.cli.BackupServiceCLI <peer_id> <mc_addr>:<mc_port> <mdb_addr>:<mdb_port> <mdr_addr>:<mdr_port> <enhanced_mode>"
+		"java backupservice.cli.BackupServiceCLI <peer_id> <mc_addr> <mc_port> <mdb_addr> <mdb_port> <mdr_addr> <mdr_port> <enhanced_mode>"
 
 	Argument description:
 		peer_id - Integer representing the peer’s unique identifier

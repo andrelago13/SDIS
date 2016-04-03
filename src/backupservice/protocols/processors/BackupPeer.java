@@ -28,6 +28,7 @@ public class BackupPeer implements ProtocolProcessor {
 	private int chunk_desired_replication;
 	private byte[] chunk_content;
 	private Boolean stored = false;
+	private Boolean insist = false;
 	
 	private Random rand = new Random();
 	private int answer_delay;
@@ -38,7 +39,7 @@ public class BackupPeer implements ProtocolProcessor {
 	private int prev_replies = 0;
 	private ArrayList<Integer> responded_peers;
 	
-	public BackupPeer(ProtocolInstance starter_message, BackupService service) {
+	public BackupPeer(ProtocolInstance starter_message, BackupService service, Boolean insist) {
 		this.service = service;
 		ProtocolHeader message_header = starter_message.getHeader();
 		chunk_content = starter_message.getBody().getContent();
@@ -46,7 +47,8 @@ public class BackupPeer implements ProtocolProcessor {
 		this.file_id = message_header.getFile_id();
 		this.chunk_no = message_header.getChunk_no();
 		this.chunk_desired_replication = message_header.getReplication_deg();
-
+		this.insist = insist;
+		
 		generateDelay(MAX_DELAY);
 		generateProtocolInstance();
 		responded_peers = new ArrayList<Integer>();
@@ -152,7 +154,7 @@ public class BackupPeer implements ProtocolProcessor {
 		if(++attempt > MAX_ATTEMPT) {
 			service.logAndShow("Terminating backup of chunk #" + chunk_no + " of file " + file_id + " for peer " + sender_id + ". Last attempt reached.");	
 			
-			if(BackupService.lastVersionActive()) {
+			if(BackupService.lastVersionActive() && insist) {
 				int rep = responded_peers.size();
 				if(stored)
 					++rep;

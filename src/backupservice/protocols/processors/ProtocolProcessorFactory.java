@@ -17,7 +17,7 @@ public abstract class ProtocolProcessorFactory {
 		switch(header.getMessage_type()) {
 		case PUTCHUNK:
 			if(header.getSender_id() != service.getIdentifier()) {
-				return new BackupPeer(message, service);
+				return new BackupPeer(message, service, true);
 			}
 			break;
 		case GETCHUNK:
@@ -38,6 +38,11 @@ public abstract class ProtocolProcessorFactory {
 		case EXISTS:
 			if(header.getSender_id() != service.getIdentifier() && BackupService.lastVersionActive()) {
 				return new DeletePeerCheck(service, header.getFile_id());
+			}
+			break;
+		case PUTCHUNKENH:
+			if(header.getSender_id() != service.getIdentifier() && BackupService.lastVersionActive()) {
+				return new BackupPeer(message, service, false);
 			}
 			break;
 		default:

@@ -24,7 +24,7 @@ public class ProtocolHeader {
 	
 	// PUTCHUNK
 	public ProtocolHeader(MessageType type, int version_major, int version_minor, int sender_id, String file_id, int chunk_no, int replication_deg) throws IllegalArgumentException {
-		if(type != MessageType.PUTCHUNK) {
+		if(type != MessageType.PUTCHUNK && type != MessageType.PUTCHUNKENH) {
 			throw new IllegalArgumentException("Message Type does not match given arguments. Expected PUTCHUNK.");
 		}
 		
