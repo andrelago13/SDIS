@@ -151,9 +151,22 @@ public class BackupPeer implements ProtocolProcessor {
 		
 		if(++attempt > MAX_ATTEMPT) {
 			service.logAndShow("Terminating backup of chunk #" + chunk_no + " of file " + file_id + " for peer " + sender_id + ". Last attempt reached.");	
+			
+			if(BackupService.lastVersionActive()) {
+				int rep = responded_peers.size();
+				if(stored)
+					++rep;
+				
+				if(rep < chunk_desired_replication) {
+					service.logAndShow("Chunk #" + chunk_no + " of file " + file_id + " for peer " + sender_id + " did not achieve desired replication degree. Insisting...");
+					BackupInitiatorChunkDelayed temp = new BackupInitiatorChunkDelayed(service, file_id, chunk_no, chunk_desired_replication);
+					service.addProcessor(temp);
+					temp.initiate();
+				}
+			}
 			terminate();
 		} else {
-			if(responded_peers.size() == prev_replies) {
+			if(responded_peers.size() == prev_replies && !BackupService.lastVersionActive()) {
 				service.logAndShow("Terminating backup of chunk #" + chunk_no + " of file " + file_id + " for peer " + sender_id + ". No more peers receiving.");	
 				terminate();
 			} else {
@@ -223,7 +236,9 @@ public class BackupPeer implements ProtocolProcessor {
 
 		FileOutputStream fos = new FileOutputStream(path);
 		fos.write(chunk_content);
-		fos.close();
+		fos.close();	
+		
+		stored = true;
 		
 		/*PrintWriter writer = new PrintWriter(getChunkPath());
 		writer.print(new String(chunk_content, 0, chunk_content.length));
