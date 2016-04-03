@@ -18,6 +18,17 @@ public class TestApp {
 	public static int LocalPort;
 
 	public static void main(String[] args){
+		
+		if(args == null || args.length != 5)
+		{
+			System.out.println("" + '\n' + '\t' + "=====> TestApp <=====" + '\n');
+			System.out.println("Usage: java TestApp <peer_ap> <sub-protocol> <opnd_1> <opnd_2>");
+			System.out.println('\t' + "<peer_app> - local peer access point.");
+			System.out.println('\t' + "<sub-protocol> - must be one of: BACKUP, RESTORE, DELETE, RECLAIM.");
+			System.out.println('\t' + "<opnd_1> - path name of the file or amount of space to reclaim.");
+			System.out.println('\t' + "<opnd_2> -  specifies the desired replication degree. Applies only to the backup sub-protocol.");
+			return;
+		}
 
 		String[] commandInfo = new String[args.length - 2];
 		String command = checkCommand(args, commandInfo);
@@ -107,7 +118,7 @@ public class TestApp {
 					if(resp.equals("0"))
 						System.out.println("Command successful!");
 					else if(resp.equals("1"))
-						System.out.println("Command partially successful! Not enough replication");
+						System.out.println("Command unsuccessful (error: " + BackupInitiator.EndCondition.values()[pos] + ")");
 					else if(resp.equals("2"))
 						System.out.println("Command unsuccessful (error: " + BackupInitiator.EndCondition.values()[pos] + ")");
 					else if(resp.equals("3"))
