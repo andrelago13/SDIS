@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.TimerTask;
 
 import network.MulticastSocketWrapper;
@@ -17,6 +18,7 @@ import backupservice.protocols.Protocols;
 public class BackupInitiatorChunkDelayed implements ProtocolProcessor {
 	
 	public final static int START_DELAY = 10000;
+	public final static int START_DELAY_RAND = 400;
 	
 	private BackupService service = null;
 	private String file_hash = null;
@@ -165,7 +167,7 @@ public class BackupInitiatorChunkDelayed implements ProtocolProcessor {
 			public void run() {
 				eval();
 			}
-		}, START_DELAY);
+		}, START_DELAY + (new Random()).nextInt(START_DELAY_RAND) );
 	}
 	
 	private byte[] getChunkContent() {
