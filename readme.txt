@@ -4,7 +4,7 @@ To compile in WINDOWS:
 	- navigate to the project's root folder
 	- create a folder named "bin"
 	- open a terminal in that directory (root folder) and type the following command:
-		"javac -d bin -sourcepath src -encoding ISO-8859-1 src/backupservice/cli/BackupServiceCLI.java src/backupservice/cli/TestApp.java
+		"javac -d bin -sourcepath src -encoding ISO-8859-1 src/backupservice/cli/BackupServiceCLI.java src/backupservice/cli/TestApp.java"
 
 To run the peer:
 	- navigate to the project's "bin" folder
