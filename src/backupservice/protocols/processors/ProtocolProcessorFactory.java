@@ -34,10 +34,12 @@ public abstract class ProtocolProcessorFactory {
 			if(header.getSender_id() != service.getIdentifier()) {
 				return new ReclaimPeer(service, header.getFile_id(), header.getChunk_no(), header.getVersion_major(), header.getVersion_minor());
 			}
+			break;
 		case EXISTS:
-			if(header.getSender_id() != service.getIdentifier()) {
+			if(header.getSender_id() != service.getIdentifier() && BackupService.lastVersionActive()) {
 				return new DeletePeerCheck(service, header.getFile_id());
 			}
+			break;
 		default:
 			break;
 		}

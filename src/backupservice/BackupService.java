@@ -16,6 +16,7 @@ import filesystem.metadata.MetadataManager;
 import backupservice.cli.CLIProtocolInstance;
 import backupservice.log.Logger;
 import backupservice.log.LoggerInterface;
+import backupservice.protocols.ProtocolHeader;
 import backupservice.protocols.ProtocolInstance;
 import backupservice.protocols.Protocols;
 import backupservice.protocols.processors.DeleteInitiatorCheck;
@@ -378,8 +379,6 @@ public class BackupService implements ResponseHandler, TCPResponseHandler, Logge
 			logAndShow("Own message received, ignoring...");
 			return;
 		}
-		
-		// TODO if message belongs to new protocol, ignore
 		
 		for(int i = 0; i < processors.size(); ++i) {
 			if(processors.get(i).handle(response_instance)) {
