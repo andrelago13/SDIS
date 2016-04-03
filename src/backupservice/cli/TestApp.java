@@ -19,7 +19,7 @@ public class TestApp {
 
 	public static void main(String[] args){
 		
-		if(args == null || args.length != 5)
+		if(args == null || args.length != 4)
 		{
 			System.out.println("" + '\n' + '\t' + "=====> TestApp <=====" + '\n');
 			System.out.println("Usage: java TestApp <peer_ap> <sub-protocol> <opnd_1> <opnd_2>");
